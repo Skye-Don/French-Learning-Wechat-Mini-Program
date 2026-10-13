@@ -18,6 +18,7 @@ function getAuth() {
 function request(path, method, data, retry) {
   return new Promise((resolve, reject) => {
     const auth = getAuth();
+    const token = auth.getToken();
     wx.request({
       url: BASE_URL + path,
       method: method || "GET",
@@ -25,7 +26,10 @@ function request(path, method, data, retry) {
       timeout: 10000,
       header: {
         "Content-Type": "application/json",
-        Authorization: auth.getToken() ? "Bearer " + auth.getToken() : "",
+        Authorization: token ? "Bearer " + token : "",
+        // 双通道带 token：部分托管网关会注入自己的 Authorization 头覆盖客户端值，
+        // 因此服务端同时接受 X-Auth-Token 作为登录态来源（对生产后端无副作用）。
+        "X-Auth-Token": token || "",
       },
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
