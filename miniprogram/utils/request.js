@@ -4,12 +4,20 @@
 // - 401 时自动静默重登并重放一次请求
 // - 统一超时 / 错误提示（PRD 8 / 10.2 错误码约定）
 // ============================================================
-const auth = require("./auth");
-
 const BASE_URL = require("./config").API_BASE_URL;
+
+// ⚠️ 不能在模块顶层 require("./auth")：
+// auth.js 顶层 require 了本文件（request），形成循环依赖。
+// CommonJS 下先被加载的一方拿到的是对方"还没填完的空 exports"，
+// 表现为 auth.getToken is not a function。
+// 解决：函数体内惰性 require（模块系统有缓存，无性能损耗）。
+function getAuth() {
+  return require("./auth");
+}
 
 function request(path, method, data, retry) {
   return new Promise((resolve, reject) => {
+    const auth = getAuth();
     wx.request({
       url: BASE_URL + path,
       method: method || "GET",
@@ -26,7 +34,7 @@ function request(path, method, data, retry) {
         }
         // 401：token 失效 → 静默重登一次再重放（PRD 5.1 异常处理）
         if (res.statusCode === 401 && !retry) {
-          auth.forceRelogin()
+          getAuth().forceRelogin()
             .then(() => resolve(request(path, method, data, true)))
             .catch(() => reject(makeError(res)));
           return;
