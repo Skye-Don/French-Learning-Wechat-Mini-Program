@@ -45,7 +45,7 @@
       }
     ]
   },
-  "usingComponents": true,
+  "usingComponents": {},
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents",
   "style": "v2"
