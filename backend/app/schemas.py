@@ -1,5 +1,11 @@
 # Pydantic v2 Schema（PRD 8.5 / 12.2：orm_mode 已改为 from_attributes）
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
+
+# CEFR 难度等级：A1/A2/B1/B2（原 1-5 数字难度，已按需求改为欧洲语言共同参考框架等级）
+CEFR_LEVELS = ("A1", "A2", "B1", "B2")
+CefrLevel = Literal["A1", "A2", "B1", "B2"]
 
 
 # ---------- 认证 ----------
@@ -35,7 +41,7 @@ class FlashcardOut(BaseModel):
     front_audio_url: str | None = None
     example_sentence: str | None = None
     example_translation: str | None = None
-    difficulty: int
+    difficulty: CefrLevel
     tags: list = []
     is_sensitive: bool = False
     tip: str | None = None
@@ -88,7 +94,7 @@ class AdminFlashcardCreate(BaseModel):
     example_sentence: str | None = None
     example_translation: str | None = None
     tip: str | None = None
-    difficulty: int = Field(1, ge=1, le=5)
+    difficulty: CefrLevel = "A1"
     tags: list[str] = []
     is_sensitive: bool = False
     status: str = Field("published", pattern="^(draft|published|archived)$")
@@ -102,7 +108,7 @@ class AdminFlashcardUpdate(BaseModel):
     example_sentence: str | None = None
     example_translation: str | None = None
     tip: str | None = None
-    difficulty: int | None = Field(None, ge=1, le=5)
+    difficulty: CefrLevel | None = None
     tags: list[str] | None = None
     is_sensitive: bool | None = None
     status: str | None = Field(None, pattern="^(draft|published|archived)$")

@@ -36,3 +36,10 @@ miniprogram/project.private.config.json
 .DS_Store
 Thumbs.db
 *.log
+
+# ===== 本地调试产物（截图 / 临时探测文件）=====
+_shot_*.png
+_dom_*.html
+
+# demo 运行时数据库（*.db 已覆盖，这里再显式兜一层）
+demo/data/demo.db

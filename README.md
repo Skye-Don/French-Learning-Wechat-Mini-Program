@@ -1,83 +1,253 @@
-# 法语学习小程序（V0）
+# French Learning Mini Program (V0)
 
-学**最地道的法语**：真实口语表达 + 教科书不教的用法提示（tip），3D 翻卡 + 间隔重复复习 + 每日打卡。
+**Learn French the way French people actually speak it** — authentic colloquial expressions, usage tips that no textbook teaches, 3D flip cards, spaced repetition, and a daily check-in streak.
 
-> 本仓库是 V0 全量交付：**小程序源码 + 生产后端代码 + H5 预览版（可扫码试用）+ 极简内容后台**。
+> This repository is the complete V0 delivery: **WeChat Mini Program source + production backend + a scannable H5 preview + a minimal content admin panel**.
 
 ---
 
-## 📱 立即试用
+## Table of contents
 
-| 方式 | 说明 |
+- [Try it now](#try-it-now)
+- [What V0 covers](#what-v0-covers)
+- [Repository layout](#repository-layout)
+- [Quick start](#quick-start)
+- [Difficulty model: CEFR A1–B2](#difficulty-model-cefr-a1b2)
+- [Data model](#data-model)
+- [API surface](#api-surface)
+- [Deploying the Mini Program](#deploying-the-mini-program)
+- [Security red lines](#security-red-lines)
+- [Compliance checklist before review](#compliance-checklist-before-review)
+- [Known limitations](#known-limitations)
+
+---
+
+## Try it now
+
+| How | Where |
 |---|---|
-| **扫码体验（推荐）** | 扫 `docs/qrcode-preview.png`，手机直接体验完整 V0 流程 |
-| **浏览器打开** | https://french-learning-miniapp.app.workbuddy.host/ （内置手机壳模拟器） |
-| **内容后台** | https://french-learning-miniapp.app.workbuddy.host/admin （极简录入页） |
+| **Scan the QR code (recommended)** | `docs/qrcode-preview.png` — open it on your phone and run the whole V0 flow |
+| **Browser** | https://french-learning-miniapp.app.workbuddy.host/ — ships with a phone-shell simulator |
+| **Content admin** | https://french-learning-miniapp.app.workbuddy.host/admin — minimal card entry panel |
 
-> ⚠️ 微信小程序本体**无法**通过 http 链接打开（微信限制），所以提供 1:1 复刻的 H5 预览版供扫码试用；
-> 真正的小程序请用微信开发者工具导入 `miniprogram/` 目录运行（见下文）。
+> A WeChat Mini Program **cannot** be opened through a plain HTTP link (platform restriction). The H5 preview above is a 1:1 replica built for evaluation. To run the real Mini Program, import the `miniprogram/` directory in WeChat DevTools — see [Deploying the Mini Program](#deploying-the-mini-program).
 
 ---
 
-## 📁 目录结构
+## What V0 covers
+
+| Area | Delivered |
+|---|---|
+| Onboarding | Silent login (`wx.login` → server exchanges `code` for `openid` → JWT) |
+| Learning path | Levels → lessons → flashcards, 10 pages total |
+| Flashcards | 3D flip, know / don't know, usage tip (`tip`) panel |
+| Spaced repetition | Per-card scheduling based on correctness, `next_review_date` driven |
+| Sensitive vocabulary | **Opt-in by default off**: sensitive cards are filtered out until the user explicitly enables them |
+| Daily check-in | Beijing-time (UTC+8) day boundary, idempotent, streak tracking, month calendar |
+| Reminders | Per-user reminder time / days / daily goal |
+| Content admin | Card + lesson CRUD, batch import, publish guard, audit log, role gating |
+| Seed content | 41 authentic French expressions across greetings, ordering, shopping and spoken connectors |
+
+Not in V0: speech scoring / ASR, subscription payments, AI conversation correction, the full Vue 3 admin panel.
+
+---
+
+## Repository layout
 
 ```
 french-miniprogram/
-├── miniprogram/        # 微信小程序源码（原生框架，10 个页面，可直接用微信开发者工具打开）
-├── backend/            # 生产后端：FastAPI + SQLAlchemy 2.0 async + PostgreSQL 16 + Redis
-│   ├── app/            # models / schemas / routers(auth, learning, admin) / security
-│   ├── alembic/        # 异步迁移（0001 初始建表，对齐 PRD 4.2 DDL）
-│   └── tests/          # 端到端冒烟测试（SQLite 跑，无需真实 PG/Redis）
-├── demo/               # H5 预览版：纯标准库 server + SQLite，零依赖一键启动
-├── docker/             # docker-compose（PG + Redis + API + Nginx）与 nginx.conf
-├── docs/               # 二维码、部署说明
-└── scripts/            # 建管理员 / 导种子 / Git 上传脚本
+├── miniprogram/        # WeChat Mini Program source (native framework, 10 pages)
+│   ├── pages/          # home, learn, profile, level, lesson, study, summary, calendar, reminder, sensitive
+│   ├── utils/          # config / request / auth / util
+│   └── project.config.json   # AppID is already filled in
+├── backend/            # Production backend: FastAPI + SQLAlchemy 2.0 async + PostgreSQL 16 + Redis
+│   ├── app/            # models / schemas / routers (auth, learning, admin) / security / dependencies
+│   ├── alembic/        # Async migrations (0001 initial schema, 0002 CEFR difficulty)
+│   └── tests/          # End-to-end smoke tests (run on SQLite, no real PG/Redis needed)
+├── demo/               # H5 preview: standard-library-only HTTP server + SQLite, zero dependencies
+├── docker/             # docker-compose (Postgres + Redis + API + Nginx) and nginx.conf
+├── docs/               # QR codes, Mini Program upload & release guide
+└── scripts/            # create admin, import seed content, git push helpers
 ```
 
 ---
 
-## 🚀 快速开始
+## Quick start
 
-### 1. 跑 H5 预览版（30 秒）
+### 1. H5 preview — 30 seconds
+
 ```bash
 cd demo
-python server.py          # 打开 http://127.0.0.1:8000
+python server.py          # http://127.0.0.1:8000
 ```
 
-### 2. 跑生产后端
+### 2. Production backend
+
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env      # 填 WX_APPID / WX_SECRET / JWT_SECRET / DB_PASSWORD
+cp .env.example .env      # fill in WX_APPID / WX_SECRET / JWT_SECRET / DB_PASSWORD
+alembic upgrade head      # create schema (connection string is read from .env, never committed)
 python ../scripts/create_admin.py admin 'YourPass@123' --role super_admin
-python ../scripts/import_seed.py        # 导入 41 张地道法语种子卡
+python ../scripts/import_seed.py        # import the 41 seed cards
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 ```
-> 开发环境自动建表；生产环境用 `alembic upgrade head`（连接串从 `.env` 读取，不入库）。
 
-### 3. 跑小程序
-1. 微信开发者工具 → 导入 `miniprogram/` 目录，填入你的 AppID
-2. 修改 `miniprogram/utils/config.js` 里的 `API_BASE_URL` 为你的后端 HTTPS 域名
-3. 上线前在微信公众平台配置 request 合法域名（必须 HTTPS + 备案）
+In `APP_ENV=development` tables are auto-created on startup. In production **always** use `alembic upgrade head`.
 
-### 4. 跑测试
+### 3. Mini Program
+
+1. WeChat DevTools → **Import project** → select `miniprogram/` → AppID `wx290524b33830af1f` is picked up automatically from `project.config.json`
+2. Set `PROD_BASE_URL` in `miniprogram/utils/config.js` to your backend HTTPS domain
+3. Before release, add that domain to **request 合法域名** (allow-listed request domains) in the WeChat admin console
+
+### 4. Tests
+
 ```bash
 cd backend
-pytest tests/ -v        # 登录→学习→敏感词过滤→打卡幂等→后台 CRUD→审计日志 全链路
+pytest tests/ -v
+# login → levels → lessons → cards → sensitive filtering → study → idempotent check-in
+# → admin CRUD → audit log → permission isolation → CEFR difficulty validation
 ```
 
 ---
 
-## 🔐 安全红线（改代码前必读）
+## Difficulty model: CEFR A1–B2
 
-- `openid` 只能在**服务端**用 code 换（`backend/app/wx_api.py`），绝不接受前端上报
-- `JWT_SECRET` / `WX_SECRET` / 数据库密码只存 `.env`，已被 `.gitignore` 排除
-- 日志禁止输出 token / openid / 密码（后台登录失败只记用户名与 IP）
-- 支付类需求上线前必须服务端签名，密钥不进前端
+Every flashcard carries a CEFR level instead of an opaque 1–5 integer:
 
-## ⚠️ 上线合规检查（缺一项可能被驳回，以微信官方最新规则为准）
+| Level | Meaning |
+|---|---|
+| `A1` | Beginner — the shortest, most frequent everyday expressions |
+| `A2` | Elementary — complete sentences for everyday situations |
+| `B1` | Intermediate — includes conjugation and register differences |
+| `B2` | Upper intermediate — slang, euphemisms, cultural context |
 
-- 类目与资质（教育类可能需要资质）
-- 用户隐私保护指引 + 隐私弹窗（本项目收集 openid、学习记录，需声明）
-- 服务器域名 HTTPS + ICP 备案
-- 敏感词汇内容已做 opt-in 前置开关（默认关闭）
+Implementation notes:
+
+- Database column `flashcards.difficulty` is `VARCHAR(2)`, default `A1`
+- Pydantic enforces `Literal["A1","A2","B1","B2"]`; anything else (including legacy integers) is rejected with `422`
+- Migration `backend/alembic/versions/0002_cefr_difficulty.py` converts existing rows: `1→A1, 2→A2, 3→B1, 4/5→B2`
+- The admin list renders a colour-coded badge and supports filtering by level (`GET /api/admin/flashcards?level=B2`)
+
+---
+
+## Data model
+
+Core tables (see `backend/app/models.py` and migration `0001`):
+
+| Table | Purpose |
+|---|---|
+| `levels` | A1–B2 levels |
+| `lessons` | Lessons belonging to a level; publishing requires ≥ 1 published card |
+| `flashcards` | Front (French) / back (Chinese) / example / tip / `difficulty` / tags / `is_sensitive` |
+| `users` | `wx_openid` (± `unionid`), streak counters, `sensitive_opt_in` |
+| `user_preferences` | Reminder time/days, daily goal |
+| `flashcard_progress` | Per-card correct/wrong counts and `next_review_date`; unique per `(user_id, flashcard_id)` |
+| `checkins` | One row per user per day, unique `(user_id, checkin_date)` |
+| `admin_accounts`, `admin_audit_logs`, `system_settings` | Backend admin, audit trail, runtime settings |
+
+Two conventions worth knowing:
+
+- **All timestamps are stored as UTC** (`TIMESTAMPTZ`), but the check-in day boundary is **Beijing time (UTC+8)**. Comparing `date(created_at)` directly loses records between 00:00 and 08:00 Beijing time — the code converts the CST day into a UTC range instead (`cst_day_utc_range`).
+- **Sensitive cards are filtered server-side** whenever `users.sensitive_opt_in = false`; requesting a sensitive card directly returns `403`.
+
+---
+
+## API surface
+
+All paths match the PRD chapter 8 contract so the Mini Program and the H5 preview share the same client code.
+
+### Learner
+
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/auth/wx-login` | Body carries only `code`; the server calls `jscode2session` |
+| `GET` | `/api/auth/me` | |
+| `GET` | `/api/levels` | Cached in Redis with jittered TTL |
+| `GET` | `/api/levels/{id}/lessons` | |
+| `GET` | `/api/lessons/{id}/flashcards` | Sensitive cards filtered unless opt-in |
+| `POST` | `/api/flashcards/{id}/progress` | `result`: `correct` / `wrong` / `skip` |
+| `GET` | `/api/review/queue` | Cards due today |
+| `POST` | `/api/checkins/auto` | Idempotent; returns `already_checked_in` |
+| `GET` | `/api/checkins/calendar?month=YYYY-MM` | |
+| `GET`/`PUT` | `/api/users/profile` | |
+| `PUT` | `/api/users/preferences` | |
+| `PUT` | `/api/users/sensitive-opt-in` | |
+
+### Admin (JWT with `admin` claim)
+
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/admin/auth/login` | bcrypt verify, 5 failures → 30 min lock, 2 h token |
+| `GET` | `/api/admin/dashboard` | |
+| `GET`/`POST` | `/api/admin/flashcards` | List supports `keyword`, `lesson_id`, `status`, `is_sensitive`, `level` |
+| `PUT`/`DELETE` | `/api/admin/flashcards/{id}` | |
+| `POST` | `/api/admin/flashcards/batch` | Up to 200 items in one transaction |
+| `GET`/`POST`/`PUT`/`DELETE` | `/api/admin/lessons` | |
+| `POST` | `/api/admin/lessons/{id}/publish` | Validates ≥ 1 published card |
+| `GET` | `/api/admin/audit-logs` | `super_admin` only (users + audit + settings too) |
+
+---
+
+## Deploying the Mini Program
+
+The AppID `wx290524b33830af1f` is already written into `miniprogram/project.config.json`. The remaining steps require **you**, because uploading code to a Mini Program needs a scan confirmation from a developer account bound to that AppID — no third party (and no CLI without your upload key) can do it.
+
+1. WeChat DevTools → **Import project** → choose the `miniprogram/` directory
+2. Verify the AppID under **Details → Basic info**
+3. Set `PROD_BASE_URL` in `miniprogram/utils/config.js`
+4. Add your domain under **mp.weixin.qq.com → Development → Development Settings → Server Domains**
+5. Click **Upload**, set a version number and notes, scan to confirm
+6. In **Version management**, promote to 体验版 (beta), let testers verify, then **Submit for review**
+
+Full walkthrough, review self-check and troubleshooting: [`docs/小程序上传发布指南.md`](docs/小程序上传发布指南.md).
+
+For unattended releases, the official [`miniprogram-ci`](https://developers.weixin.qq.com/miniprogram/dev/devtools/ci.html) can be wired into CI using an upload key you generate in the admin console.
+
+---
+
+## Security red lines
+
+- `openid` is obtained **server-side only** by exchanging the `code` from `wx.login`; the client never sends an `openid`
+- `JWT_SECRET`, `WX_SECRET` and database passwords live only in `.env`, which is git-ignored
+- Logs must never contain tokens, `openid`s or passwords — failed admin logins record username and IP only
+- Payment signing belongs on the server; keys never ship in client code
+- The admin panel in `demo/` is guarded by an `X-Admin-Key` header. It is a **preview-only** gate (the key is visible in front-end code) — production must use the JWT + `AdminAccount` + audit-log path in `backend/`
+
+---
+
+## Compliance checklist before review
+
+Always verify against the **latest official WeChat rules**; this list is a starting point, not legal advice.
+
+- [ ] Correct category selected; confirm whether the education category requires a qualification in your case
+- [ ] User privacy protection guide configured and published in the admin console (`wx.login` collects user data and must be declared)
+- [ ] Server domain uses HTTPS and is ICP-registered
+- [ ] User agreement available in-app
+- [ ] Submit a test account / note: V0 has no signup — "open and use"
+- [ ] The 2 profanity cards in the seed set are hidden behind `sensitive_opt_in`; state this in the review notes
+- [ ] No outbound links, no incentivised sharing, no forced follow
+
+---
+
+## Known limitations
+
+- The production backend has not been integration-tested against real PostgreSQL/Redis in this environment; tests run on SQLite. Run `alembic upgrade head` against a real database before release.
+- The H5 preview host is a temporary evaluation environment with no availability guarantee.
+- `demo/` stores an SQLite file and uses a simplified auth flow; it is **not** the production backend.
+- The full Vue 3 + Element Plus admin panel is planned for the next iteration.
+
+---
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Mini Program | Native WeChat framework (WXML / WXSS / JS), base library 3.x |
+| Backend | FastAPI, SQLAlchemy 2.0 async, Pydantic v2, Alembic, PyJWT, bcrypt |
+| Storage | PostgreSQL 16, Redis 7 |
+| Preview | Python standard library `http.server` + SQLite |
+| Ops | Docker Compose, Nginx, Gunicorn/Uvicorn |
+
+Brand palette: primary `#5B7FA5`, accent `#D4837A`, background `#F8F6F3`, success `#7CB69D`, warning `#E8B86D`.

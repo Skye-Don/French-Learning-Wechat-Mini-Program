@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235B7FA5'/%3E%3Crect x='6' y='8' width='6' height='16' fill='%23fff'/%3E%3Crect x='13' y='8' width='6' height='16' fill='%23D4837A'/%3E%3Crect x='20' y='8' width='6' height='16' fill='%23fff'/%3E%3C/svg%3E" />
 <title>内容管理 · 法语学习小程序（V0 极简后台）</title>
 <style>
   :root{--blue:#5B7FA5;--blue-d:#4A6C8F;--blue-l:#EDF2F7;--red:#D4837A;--bg:#F8F6F3;--text:#2D3436;--text2:#636E72;--line:#E8E5E1;--green:#7CB69D}
@@ -30,6 +31,11 @@
   tr:last-child td{border-bottom:0}
   .tag{display:inline-block;background:var(--blue-l);color:var(--blue-d);border-radius:6px;padding:2px 7px;font-size:11px;margin-right:4px}
   .tag.warn{background:#FBEFED;color:var(--red)}
+  /* CEFR 难度徽标：A1 -> B2 由浅到深（品牌色系，与小程序等级卡一致） */
+  .tag.lvl-A1{background:#EDF3F8;color:#5B7FA5}
+  .tag.lvl-A2{background:#E6F1EC;color:#4E8C74}
+  .tag.lvl-B1{background:#FBF2E2;color:#B8892F}
+  .tag.lvl-B2{background:#F4EAF6;color:#7A5A8C}
   .fr{font-weight:600;color:var(--blue-d)}
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .form-grid .full{grid-column:1/-1}
@@ -60,8 +66,13 @@
       <label>所属课时
         <select id="f_lesson"></select>
       </label>
-      <label>难度（1-5）
-        <input id="f_difficulty" type="number" min="1" max="5" value="1" />
+      <label>难度（CEFR 等级）
+        <select id="f_difficulty">
+          <option value="A1">A1 · 入门（最常用、最短的高频表达）</option>
+          <option value="A2">A2 · 基础（日常场景完整句）</option>
+          <option value="B1">B1 · 进阶（含变位/语域差异）</option>
+          <option value="B2">B2 · 高阶（俚语、委婉语、文化背景）</option>
+        </select>
       </label>
       <label class="full">正面（法语）<input id="f_front" placeholder="Du coup" /></label>
       <label class="full">背面（中文释义）<input id="f_back" placeholder="所以 / 结果（口语高频）" /></label>
@@ -87,6 +98,13 @@
     <div class="toolbar">
       <input id="q" placeholder="搜索法语/中文…" style="flex:1;min-width:180px" />
       <select id="filterLesson"><option value="">全部课时</option></select>
+      <select id="filterLevel">
+        <option value="">全部难度</option>
+        <option value="A1">A1</option>
+        <option value="A2">A2</option>
+        <option value="B1">B1</option>
+        <option value="B2">B2</option>
+      </select>
     </div>
     <div id="list"><div class="empty">加载中…</div></div>
   </div>

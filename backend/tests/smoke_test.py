@@ -39,15 +39,15 @@ async def _seed_content(session_factory):
             Flashcard(lesson_id=ls.id, front_text="Salut", back_text="你好／嗨（熟人之间）",
                       example_sentence="Salut, ça va ?", example_translation="嗨，最近怎么样？",
                       tip="白天晚上都能用，但只用于朋友和同龄人，对老板要说 Bonjour",
-                      difficulty=1, tags=["日常"], status="published", sort_order=1),
+                      difficulty="A1", tags=["日常"], status="published", sort_order=1),
             Flashcard(lesson_id=ls.id, front_text="Ça marche", back_text="行／没问题",
                       example_sentence="On se voit à 20h ? — Ça marche.",
                       example_translation="晚上8点见？——没问题。",
                       tip="教科书只教 D'accord，法国人口语高频用 Ça marche",
-                      difficulty=2, tags=["口语"], status="published", sort_order=2),
+                      difficulty="A2", tags=["口语"], status="published", sort_order=2),
             Flashcard(lesson_id=ls.id, front_text="Merde", back_text="该死／糟了（脏话）",
                       tip="法国最常用的宣泄词，正式场合绝对不要说",
-                      difficulty=3, tags=["脏话"], is_sensitive=True,
+                      difficulty="B1", tags=["脏话"], is_sensitive=True,
                       status="published", sort_order=3),
         ]
         db.add_all(cards)
@@ -187,7 +187,7 @@ async def test_admin_flow_and_permissions():
                               json={"lesson_id": lesson_id, "front_text": "Grave",
                                     "back_text": "非常／超（口语）",
                                     "tip": "C'est grave bien = 超棒，口语里不是'严重的'",
-                                    "difficulty": 2, "tags": ["口语"], "status": "published"})
+                                    "difficulty": "A2", "tags": ["口语"], "status": "published"})
         assert r.status_code == 201, r.text
         new_id = r.json()["id"]
 
@@ -242,3 +242,52 @@ async def test_health():
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         r = await client.get("/health")
         assert r.status_code == 200 and r.json()["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_cefr_difficulty_levels():
+    """难度等级必须是 A1/A2/B1/B2：合法值放行，越界值（含旧的数字 1-5）一律 422。
+
+    对应需求变更：后台难度由 1-5 数字改为 CEFR 等级。
+    """
+    sf = _session_factory()
+    level_id, lesson_id, _ = await _seed_content(sf)
+    await _mk_admin(sf, username="cefr-admin")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.post("/api/admin/auth/login",
+                              json={"username": "cefr-admin", "password": "Admin@12345"})
+        assert r.status_code == 200, r.text
+        h = {"Authorization": f"Bearer {r.json()['token']}"}
+
+        base = {"lesson_id": lesson_id, "front_text": "Ça marche",
+                "back_text": "行／没问题", "status": "published"}
+
+        # 1) 四个合法等级都能建
+        for lvl in ("A1", "A2", "B1", "B2"):
+            r = await client.post("/api/admin/flashcards", headers=h,
+                                  json={**base, "front_text": base["front_text"] + lvl,
+                                        "difficulty": lvl})
+            assert r.status_code == 201, f"{lvl} 应当放行，实际 {r.status_code}: {r.text}"
+
+        # 2) 越界等级（C1 / 数字 / 空）全部 422
+        for bad in ("C1", 3, 1, 9, "a1x", ""):
+            r = await client.post("/api/admin/flashcards", headers=h,
+                                  json={**base, "difficulty": bad})
+            assert r.status_code == 422, f"{bad!r} 应当被拒，实际 {r.status_code}"
+
+        # 3) 默认值 = A1
+        r = await client.post("/api/admin/flashcards", headers=h, json=base)
+        assert r.status_code == 201
+        r = await client.get("/api/admin/flashcards?keyword=Ça marche", headers=h)
+        assert any(c["difficulty"] == "A1" for c in r.json()["items"])
+
+        # 4) 按等级筛选
+        r = await client.get("/api/admin/flashcards?level=B2", headers=h)
+        assert r.status_code == 200
+        assert all(c["difficulty"] == "B2" for c in r.json()["items"])
+
+        # 5) 非法筛选值 → 422
+        r = await client.get("/api/admin/flashcards?level=C2", headers=h)
+        assert r.status_code == 422

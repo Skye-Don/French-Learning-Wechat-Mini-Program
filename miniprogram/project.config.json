@@ -1,4 +1,7 @@
 {
+  "description": "学最地道的法语 · V0（项目代号 french-miniprogram）",
+  "appid": "wx290524b33830af1f",
+  "projectname": "french-learning",
   "compileType": "miniprogram",
   "setting": {
     "urlCheck": true,
@@ -8,6 +11,7 @@
     "minified": true,
     "uglifyFileName": false,
     "ignoreUploadUnusedFiles": true,
+    "checkSiteMap": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],

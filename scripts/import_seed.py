@@ -85,7 +85,7 @@ async def do_import(reset: bool) -> None:
                 front_text=c["front_text"], back_text=c["back_text"],
                 example_sentence=c.get("example_sentence"),
                 example_translation=c.get("example_translation"),
-                tip=c.get("tip"), difficulty=c.get("difficulty", 1),
+                tip=c.get("tip"), difficulty=norm_level(c.get("difficulty", "A1")),
                 tags=c.get("tags", []), is_sensitive=bool(c.get("is_sensitive")),
                 sort_order=c.get("sort_order", i), status="published",
             ))
@@ -95,6 +95,21 @@ async def do_import(reset: bool) -> None:
         await db.commit()
         print(f"[完成] 闪卡新增 {added} 张，跳过 {skipped} 张（共 {len(cards)} 张种子）")
 
+
+
+# CEFR 难度等级：A1/A2/B1/B2（历史 1-5 数字自动映射）
+_NUM_TO_CEFR = {1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "B2"}
+
+
+def norm_level(v):
+    """归一到 A1/A2/B1/B2，兼容旧的数字难度。"""
+    if isinstance(v, str) and v.strip().upper() in ("A1", "A2", "B1", "B2"):
+        return v.strip().upper()
+    if isinstance(v, int):
+        return _NUM_TO_CEFR.get(v, "A1")
+    if isinstance(v, str) and v.strip().isdigit():
+        return _NUM_TO_CEFR.get(int(v.strip()), "A1")
+    return "A1"
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="导入种子内容到生产库")

@@ -7,7 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...database import get_db
 from ...dependencies import client_ip, get_current_admin, write_audit_log
 from ...models import AdminAccount, Flashcard, Lesson
-from ...schemas import AdminFlashcardBatch, AdminFlashcardCreate, AdminFlashcardUpdate
+from ...schemas import (
+    CEFR_LEVELS,
+    AdminFlashcardBatch,
+    AdminFlashcardCreate,
+    AdminFlashcardUpdate,
+)
 
 router = APIRouter(prefix="/api/admin", tags=["admin-flashcards"])
 
@@ -31,6 +36,8 @@ async def list_cards(
     status_: str | None = Query(None, alias="status",
                                 pattern="^(draft|published|archived)$"),
     is_sensitive: bool | None = Query(None),
+    level: str | None = Query(None, pattern=f"^({'|'.join(CEFR_LEVELS)})$",
+                              description="CEFR 难度等级筛选：A1 / A2 / B1 / B2"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     admin: AdminAccount = Depends(get_current_admin),
@@ -50,6 +57,9 @@ async def list_cards(
     if is_sensitive is not None:
         q = q.where(Flashcard.is_sensitive.is_(is_sensitive))
         cnt_q = cnt_q.where(Flashcard.is_sensitive.is_(is_sensitive))
+    if level:                                # CEFR 等级：A1 / A2 / B1 / B2
+        q = q.where(Flashcard.difficulty == level.upper())
+        cnt_q = cnt_q.where(Flashcard.difficulty == level.upper())
 
     total = (await db.execute(cnt_q)).scalar() or 0
     rows = (await db.execute(

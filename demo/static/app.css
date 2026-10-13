@@ -264,3 +264,12 @@ body{
   .phone-frame{width:100%;height:100vh;height:100dvh;border-radius:0;box-shadow:none}
   .statusbar{padding-top:env(safe-area-inset-top);height:calc(30px + env(safe-area-inset-top));flex-basis:calc(30px + env(safe-area-inset-top))}
 }
+
+/* ============ 关键修复：hidden 必须压过组件自带 display ============
+   坑：.modal-root / .tabbar 自带 display:flex，优先级高于 UA 的 [hidden]{display:none}，
+   导致 hidden=true 时遮罩仍然全屏铺着并吃掉所有点击（移动端表现为"整个页面点不动"）。 */
+[hidden]{display:none !important}
+
+/* 弹窗在小屏上可滚动，避免按钮被挤出可视区 */
+.modal{max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-root{padding:18px}

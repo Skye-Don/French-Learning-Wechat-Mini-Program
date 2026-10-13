@@ -12,6 +12,10 @@ from sqlalchemy.types import JSON
 # 可移植 JSON 类型：PostgreSQL 下走 JSONB（支持 GIN 索引），SQLite 下走 JSON（便于单测跑通）
 JSONType = JSON().with_variant(JSONB(astext_type=Text()), "postgresql")
 
+# CEFR 难度取值（PRD 2.2 等级体系；后台录入与校验统一以此为准）
+CEFR_LEVELS = ("A1", "A2", "B1", "B2")
+DEFAULT_CEFR_LEVEL = "A1"
+
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
@@ -66,7 +70,8 @@ class Flashcard(Base, TimestampMixin):
     back_audio_url: Mapped[str | None] = mapped_column(String(500))
     example_sentence: Mapped[str | None] = mapped_column(Text)
     example_translation: Mapped[str | None] = mapped_column(Text)
-    difficulty: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    # CEFR 难度等级：A1 / A2 / B1 / B2（原 1-5 数字难度已废弃，见迁移 0002）
+    difficulty: Mapped[str] = mapped_column(String(2), default="A1", nullable=False)
     tags: Mapped[list] = mapped_column(JSONType, default=list, nullable=False)
     is_sensitive: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

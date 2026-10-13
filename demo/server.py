@@ -44,6 +44,12 @@ DB_PATH = os.environ.get("DEMO_DB_PATH", os.path.join(HERE, "data", "demo.db"))
 # 打卡与日期一律按北京时间 UTC+8 计算（PRD 5.6：以服务器时间的北京时间日期为准）
 CST = timezone(timedelta(hours=8))
 
+# 极简后台的门禁钥匙。
+# 背景：预览版部署在公网，而 /api/admin/* 在 demo 里没有真实的后台登录态，
+# 若不加门禁，任何一个登录用户都能往内容库里写脏数据。
+# 生产环境请直接走 backend/ 的 AdminAccount + JWT 鉴权，不要复用这套逻辑。
+DEMO_ADMIN_KEY = os.environ.get("DEMO_ADMIN_KEY", "french-admin-2026")
+
 
 def today_cst():
     return datetime.now(CST).date()
@@ -96,7 +102,7 @@ CREATE TABLE IF NOT EXISTS flashcards (
     back_audio_url TEXT,
     example_sentence TEXT,
     example_translation TEXT,
-    difficulty INTEGER NOT NULL DEFAULT 1,
+    difficulty TEXT NOT NULL DEFAULT 'A1',   -- CEFR 等级：A1 / A2 / B1 / B2
     tags TEXT DEFAULT '[]',
     is_sensitive INTEGER NOT NULL DEFAULT 0,
     sort_order INTEGER NOT NULL DEFAULT 0,
@@ -219,6 +225,31 @@ _db_lock = threading.Lock()
 # demo token 形如 demo.<uid>.<openid>；用 search 而非 split，避免被网关注入的 JWT 干扰
 DEMO_TOKEN_RE = re.compile(r"demo\.(\d+)(?:\.|$)")
 
+# ---------- CEFR 难度等级（A1/A2/B1/B2）----------
+CEFR_LEVELS = ("A1", "A2", "B1", "B2")
+
+# 旧数字难度 -> CEFR 等级（历史数据/旧客户端兼容映射）
+_NUM_TO_CEFR = {1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "B2"}
+
+
+def norm_level(v) -> str:
+    """把任意入参归一到 A1/A2/B1/B2；无法识别时回落 A1。
+
+    兼容两代数据：历史库里存的是 1-5 的整数，新录入的是 "A1" 这类字符串。
+    """
+    if isinstance(v, bool):
+        return "A1"
+    if isinstance(v, int):
+        return _NUM_TO_CEFR.get(v, "B2" if v >= 4 else "A1")
+    if isinstance(v, str):
+        t = v.strip().upper()
+        if t in CEFR_LEVELS:
+            return t
+        if t.isdigit():                      # 字符串形式的旧数字，如 "2"
+            return _NUM_TO_CEFR.get(int(t), "A1")
+    return "A1"
+
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=15)
@@ -226,11 +257,61 @@ def get_db():
     return conn
 
 
+def migrate_difficulty_to_cefr(conn):
+    """旧库升级：difficulty INTEGER(1-5) -> TEXT(A1/A2/B1/B2)。
+
+    SQLite 不支持 ALTER COLUMN，只能建新表 -> 搬数据 -> 改名 -> 重建索引。
+    幂等：新库（声明已是 TEXT）直接跳过。
+    """
+    cols = {r["name"]: (r["type"] or "").upper()
+            for r in conn.execute("PRAGMA table_info(flashcards)").fetchall()}
+    if cols.get("difficulty", "").upper() != "INTEGER":
+        return  # 已是新结构
+    conn.executescript("""
+        BEGIN;
+        CREATE TABLE flashcards_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lesson_id INTEGER,
+            front_text TEXT NOT NULL,
+            back_text TEXT NOT NULL,
+            front_audio_url TEXT,
+            back_audio_url TEXT,
+            example_sentence TEXT,
+            example_translation TEXT,
+            difficulty TEXT NOT NULL DEFAULT 'A1',
+            tags TEXT DEFAULT '[]',
+            is_sensitive INTEGER NOT NULL DEFAULT 0,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'draft',
+            tip TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        INSERT INTO flashcards_new
+            (id, lesson_id, front_text, back_text, front_audio_url, back_audio_url,
+             example_sentence, example_translation, difficulty, tags, is_sensitive,
+             sort_order, status, tip, created_at, updated_at)
+        SELECT id, lesson_id, front_text, back_text, front_audio_url, back_audio_url,
+               example_sentence, example_translation,
+               CASE difficulty WHEN 1 THEN 'A1' WHEN 2 THEN 'A2' WHEN 3 THEN 'B1' ELSE 'B2' END,
+               tags, is_sensitive, sort_order, status, tip, created_at, updated_at
+        FROM flashcards;
+        DROP TABLE flashcards;
+        ALTER TABLE flashcards_new RENAME TO flashcards;
+        CREATE INDEX IF NOT EXISTS idx_flashcards_lesson ON flashcards(lesson_id);
+        CREATE INDEX IF NOT EXISTS idx_flashcards_status ON flashcards(status);
+        CREATE INDEX IF NOT EXISTS idx_flashcards_difficulty ON flashcards(difficulty);
+        COMMIT;
+    """)
+    conn.commit()
+
+
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = get_db()
     try:
         conn.executescript(SCHEMA)
+        migrate_difficulty_to_cefr(conn)
         # 种子只灌一次：levels / lessons / flashcards
         n = conn.execute("SELECT COUNT(*) c FROM flashcards").fetchone()["c"]
         if n == 0:
@@ -814,6 +895,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"month": month, "items": [row_to_dict(r) for r in rows]})
 
         # ========== 极简后台（PRD 8.4 子集，V0 只做闪卡/课时录入）==========
+        # 门禁：必须带 X-Admin-Key（预览版专用；生产请用 backend/ 的 JWT 后台鉴权）
+        if path.startswith("/api/admin/"):
+            key = self.headers.get("X-Admin-Key") or ""
+            if key != DEMO_ADMIN_KEY:
+                return self._err(401, "后台钥匙缺失或不正确（需要 X-Admin-Key 请求头）")
+
         if path == "/api/admin/flashcards" and method == "GET":
             rows = conn.execute("SELECT * FROM flashcards ORDER BY lesson_id, sort_order").fetchall()
             return self._json({"items": [public_flashcard(r) for r in rows], "total": len(rows)})
@@ -826,7 +913,7 @@ class Handler(BaseHTTPRequestHandler):
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (body.get("lesson_id"), body["front_text"], body["back_text"],
                  body.get("example_sentence"), body.get("example_translation"),
-                 int(body.get("difficulty") or 1), json.dumps(body.get("tags") or [], ensure_ascii=False),
+                 norm_level(body.get("difficulty")), json.dumps(body.get("tags") or [], ensure_ascii=False),
                  1 if body.get("is_sensitive") else 0, int(body.get("sort_order") or 0),
                  body.get("status") or "published", body.get("tip"), ts, ts),
             )
@@ -842,7 +929,7 @@ class Handler(BaseHTTPRequestHandler):
                     args.append(body[col])
             if "difficulty" in body:
                 sets.append("difficulty=?")
-                args.append(int(body["difficulty"]))
+                args.append(norm_level(body["difficulty"]))
             if "is_sensitive" in body:
                 sets.append("is_sensitive=?")
                 args.append(1 if body["is_sensitive"] else 0)
