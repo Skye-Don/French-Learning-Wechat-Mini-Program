@@ -167,13 +167,14 @@ All paths match the PRD chapter 8 contract so the Mini Program and the H5 previe
 | `GET` | `/api/levels` | Cached in Redis with jittered TTL |
 | `GET` | `/api/levels/{id}/lessons` | |
 | `GET` | `/api/lessons/{id}/flashcards` | Sensitive cards filtered unless opt-in |
-| `POST` | `/api/flashcards/{id}/progress` | `result`: `correct` / `wrong` / `skip` |
-| `GET` | `/api/review/queue` | Cards due today |
-| `POST` | `/api/checkins/auto` | Idempotent; returns `already_checked_in` |
+| `POST` | `/api/flashcard-progress` | Body: `flashcard_id`, `result` (`correct` / `wrong` / `skip`), `lesson_id`, `response_time_ms` |
+| `GET` | `/api/flashcard-progress/review-today` | Cards due today |
+| `POST` | `/api/checkins/auto` | Idempotent |
 | `GET` | `/api/checkins/calendar?month=YYYY-MM` | |
-| `GET`/`PUT` | `/api/users/profile` | |
-| `PUT` | `/api/users/preferences` | |
-| `PUT` | `/api/users/sensitive-opt-in` | |
+| `GET`/`PUT` | `/api/user/profile` | |
+| `PUT` | `/api/user/preferences/reminder` | Reminder time / days / daily goal |
+| `POST` | `/api/user/preferences/sensitive-opt-in` | Toggles sensitive content |
+| `GET` | `/api/user/today-summary` | Today's goal progress |
 
 ### Admin (JWT with `admin` claim)
 
@@ -186,7 +187,11 @@ All paths match the PRD chapter 8 contract so the Mini Program and the H5 previe
 | `POST` | `/api/admin/flashcards/batch` | Up to 200 items in one transaction |
 | `GET`/`POST`/`PUT`/`DELETE` | `/api/admin/lessons` | |
 | `POST` | `/api/admin/lessons/{id}/publish` | Validates ≥ 1 published card |
-| `GET` | `/api/admin/audit-logs` | `super_admin` only (users + audit + settings too) |
+| `GET`/`PUT` | `/api/admin/levels` | |
+| `GET` | `/api/admin/audit-logs` | `super_admin` only |
+| `GET` | `/api/admin/users` | `super_admin` only; `openid` is masked |
+| `GET`/`PUT` | `/api/admin/settings` | `super_admin` only |
+| `POST` | `/api/admin/auth/logout`, `GET` `/api/admin/me` | Token lifecycle |
 
 ---
 
