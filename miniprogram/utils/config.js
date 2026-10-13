@@ -12,7 +12,10 @@
 // ============================================================
 const CURRENT = "local";
 
-const LOCAL_BASE_URL = "http://127.0.0.1:8000";   // 本机 demo 后端（python server.py 默认端口）
+// 真机调试必须用电脑的【局域网 IP】（127.0.0.1 在手机上指手机自己）。
+// 查询方法：命令行 ipconfig -> 无线局域网适配器 WLAN 的 IPv4。
+// ⚠️ 路由器 DHCP 可能换 IP，真机连不上时先重新查一下。
+const LOCAL_BASE_URL = "http://192.168.68.181:8000";   // 本机 demo 后端（python server.py）
 const PROD_BASE_URL  = "";                        // ← 上线前填你的 HTTPS 域名（需备案，以微信官方规则为准）
 const DEMO_BASE_URL  = "https://french-learning-miniapp.app.workbuddy.host";
 
