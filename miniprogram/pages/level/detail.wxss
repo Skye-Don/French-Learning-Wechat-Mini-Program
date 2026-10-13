@@ -1,0 +1,27 @@
+.page { padding: 24rpx; }
+.skel {
+  height: 150rpx; margin-bottom: 24rpx; border-radius: 24rpx;
+  background: linear-gradient(90deg, #efeae4 25%, #f6f2ee 37%, #efeae4 63%);
+  background-size: 400% 100%; animation: sk 1.4s ease infinite;
+}
+@keyframes sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+.lesson-item {
+  display: flex; align-items: center; gap: 24rpx;
+  padding: 26rpx 0; border-bottom: 1rpx solid var(--fr-line);
+}
+.lesson-item:last-child { border-bottom: 0; }
+.lesson-item:active { opacity: 0.7; }
+.lesson-ico {
+  width: 84rpx; height: 84rpx; border-radius: 20rpx; flex: 0 0 84rpx;
+  background: var(--fr-blue-light); display: flex; align-items: center; justify-content: center;
+  font-size: 38rpx;
+}
+.lesson-main { flex: 1; min-width: 0; }
+.lesson-title { font-size: 28rpx; font-weight: 500; }
+.lesson-meta {
+  font-size: 23rpx; color: var(--fr-text2); margin-top: 6rpx;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.count { color: var(--fr-blue); }
+.lesson-arrow { color: #c7c2bc; font-size: 32rpx; }

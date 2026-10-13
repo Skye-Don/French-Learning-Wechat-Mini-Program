@@ -1,0 +1,2 @@
+# H5 预览版（demo/）零第三方依赖：只用 Python 标准库
+# 生产后端依赖见 ../backend/requirements.txt

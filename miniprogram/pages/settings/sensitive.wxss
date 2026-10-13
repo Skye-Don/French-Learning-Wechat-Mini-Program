@@ -1,0 +1,13 @@
+.page { padding: 24rpx; }
+.s-title { font-size: 28rpx; font-weight: 600; }
+.s-desc { font-size: 25rpx; line-height: 1.8; margin-top: 16rpx; }
+
+.opt-item {
+  border: 3rpx solid var(--fr-line); border-radius: 24rpx;
+  padding: 28rpx; margin-bottom: 20rpx; background: #fff;
+}
+.opt-item.sel { border-color: var(--fr-blue); background: var(--fr-blue-light); }
+.opt-title { font-size: 28rpx; font-weight: 600; }
+.opt-desc { font-size: 24rpx; color: var(--fr-text2); margin-top: 10rpx; line-height: 1.6; }
+.state { font-size: 24rpx; text-align: center; margin-top: 32rpx; }
+.state-v { color: var(--fr-blue); font-weight: 600; }

@@ -1,0 +1,23 @@
+<view class="page">
+  <view wx:if="{{loading}}">
+    <view class="skel" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+  </view>
+
+  <view wx:elif="{{lessons.length === 0}}" class="empty-state">
+    <view class="ico">📭</view>
+    <view class="txt">该等级暂无已发布课时</view>
+  </view>
+
+  <view wx:else class="fr-card">
+    <view class="lesson-item" wx:for="{{lessons}}" wx:key="id"
+      bindtap="onLessonTap" data-id="{{item.id}}">
+      <view class="lesson-ico">📇</view>
+      <view class="lesson-main">
+        <view class="lesson-title">{{item.title}}</view>
+        <view class="lesson-meta">{{item.description}}</view>
+        <view class="lesson-meta count">📇 {{item.card_count}} 张卡片</view>
+      </view>
+      <view class="lesson-arrow">›</view>
+    </view>
+  </view>
+</view>

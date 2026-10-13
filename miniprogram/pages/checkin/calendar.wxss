@@ -1,0 +1,18 @@
+.page { padding: 24rpx; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; padding: 8rpx 0 28rpx; }
+.cal-nav { font-size: 44rpx; color: var(--fr-blue); padding: 0 24rpx; }
+.cal-month { font-size: 30rpx; font-weight: 600; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12rpx; }
+.cal-w { text-align: center; font-size: 22rpx; color: var(--fr-text2); padding: 12rpx 0; }
+.cal-d {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 25rpx;
+}
+.cal-d.on { background: var(--fr-blue); color: #fff; font-weight: 600; }
+.cal-d.today { box-shadow: 0 0 0 4rpx var(--fr-red) inset; }
+.cal-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 28rpx; padding-top: 24rpx; border-top: 1rpx dashed var(--fr-line);
+  font-size: 24rpx;
+}

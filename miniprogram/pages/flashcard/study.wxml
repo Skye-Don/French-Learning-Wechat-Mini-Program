@@ -1,0 +1,44 @@
+<view class="study-wrap">
+  <block wx:if="{{loading}}">
+    <view class="skel card-skel"></view>
+  </block>
+
+  <block wx:else>
+    <!-- 进度 -->
+    <view class="study-progress">
+      <view class="progress-bar"><view class="progress-in" style="width:{{progressPct}}%"></view></view>
+      <text class="progress-txt">{{idx + 1}} / {{cards.length}}</text>
+    </view>
+
+    <!-- 翻转卡片 -->
+    <view class="flip-card {{flipped ? 'flipped' : ''}}" bindtap="onFlip">
+      <view class="flip-inner">
+        <!-- 正面：法语 -->
+        <view class="flip-face">
+          <view class="fc-front">{{card.front_text}}</view>
+          <view class="fc-tags" wx:if="{{card.tags.length}}">
+            <text wx:for="{{card.tags}}" wx:key="*this" class="fc-tag-item">#{{item}}</text>
+          </view>
+          <view class="fc-hint">点击卡片翻面看释义</view>
+        </view>
+        <!-- 背面：中文 + 例句 + 地道提示 -->
+        <view class="flip-face flip-back">
+          <view class="fc-sensitive" wx:if="{{card.is_sensitive}}">敏感词汇</view>
+          <view class="fc-back-main">{{card.front_text}}</view>
+          <view class="fc-back-sub">{{card.back_text}}</view>
+          <view class="fc-example" wx:if="{{card.example_sentence}}">
+            <view class="fc-ex-fr">{{card.example_sentence}}</view>
+            <view class="fc-ex-zh" wx:if="{{card.example_translation}}">{{card.example_translation}}</view>
+          </view>
+          <view class="fc-tip" wx:if="{{card.tip}}">💡 {{card.tip}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="study-actions">
+      <button class="fr-btn btn-wrong" disabled="{{submitting}}" bindtap="onAnswer" data-v="wrong">不认识</button>
+      <button class="fr-btn btn-right" disabled="{{submitting}}" bindtap="onAnswer" data-v="correct">认识</button>
+    </view>
+  </block>
+</view>

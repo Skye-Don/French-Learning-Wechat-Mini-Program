@@ -1,0 +1,34 @@
+<view class="page">
+  <view wx:if="{{loading}}">
+    <view class="skel" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+  </view>
+
+  <block wx:else>
+    <!-- 今日复习 -->
+    <view class="fr-card">
+      <view class="between">
+        <view>
+          <view class="card-title">今日待复习</view>
+          <view class="muted sub">按记忆曲线，今天该看这些</view>
+        </view>
+        <view class="big-num">{{reviewTotal}}</view>
+      </view>
+      <button wx:if="{{reviewTotal > 0}}" class="fr-btn block-btn" bindtap="onReviewTap">开始复习</button>
+      <view wx:else class="muted sub" style="margin-top:20rpx">暂无到期卡片，去学个新课时吧</view>
+    </view>
+
+    <!-- 按等级 -->
+    <view class="section-title">按等级学习</view>
+    <view class="fr-card level-row" wx:for="{{levels}}" wx:key="id"
+      bindtap="onLevelTap" data-id="{{item.id}}">
+      <view class="between">
+        <view>
+          <text class="lv-code">{{item.code}}</text>
+          <text class="muted lv-name">{{item.name}}</text>
+          <text class="badge">{{item.lesson_count}} 课时</text>
+        </view>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+  </block>
+</view>

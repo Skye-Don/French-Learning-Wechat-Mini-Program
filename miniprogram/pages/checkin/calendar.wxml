@@ -1,0 +1,22 @@
+<view class="page">
+  <view class="fr-card">
+    <view class="cal-head">
+      <view class="cal-nav" bindtap="onPrevMonth">‹</view>
+      <view class="cal-month">{{monthLabel}}</view>
+      <view class="cal-nav" bindtap="onNextMonth">›</view>
+    </view>
+
+    <view class="cal-grid">
+      <view class="cal-w" wx:for="{{weeks}}" wx:key="*this">{{item}}</view>
+      <view class="cal-d {{item.on ? 'on' : ''}} {{item.today ? 'today' : ''}}"
+        wx:for="{{cells}}" wx:key="index">
+        {{item.empty ? '' : item.day}}
+      </view>
+    </view>
+
+    <view class="cal-foot">
+      <text>🔥 当前连续 {{streakDays}} 天</text>
+      <text class="muted">本月已打卡 {{checkinCount}} 天</text>
+    </view>
+  </view>
+</view>

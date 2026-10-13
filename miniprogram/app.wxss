@@ -1,0 +1,79 @@
+// ============================================================
+// 法语学习小程序 · 全局样式（PRD 11 品牌视觉体系）
+// ins 风法蓝白红，低饱和度
+// ============================================================
+page {
+  /* 品牌色（与 PRD 11.1 一致） */
+  --fr-blue: #5B7FA5;
+  --fr-blue-dark: #4A6C8F;
+  --fr-blue-light: #EDF2F7;
+  --fr-red: #D4837A;
+  --fr-red-light: #FBEFED;
+  --fr-bg: #F8F6F3;
+  --fr-card: #FFFFFF;
+  --fr-text: #2D3436;
+  --fr-text2: #636E72;
+  --fr-line: #E8E5E1;
+  --fr-green: #7CB69D;
+  --fr-yellow: #E8B86D;
+
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Helvetica Neue", "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+  font-size: 28rpx;
+  color: var(--fr-text);
+  background-color: var(--fr-bg);
+}
+
+view, text, image, button, input {
+  box-sizing: border-box;
+}
+
+/* 安全区 */
+.safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 通用卡片 */
+.fr-card {
+  background: var(--fr-card);
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin: 36rpx 4rpx 20rpx;
+}
+
+.muted { color: var(--fr-text2); }
+
+/* 通用按钮 */
+.fr-btn {
+  background: var(--fr-blue);
+  color: #fff;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  padding: 22rpx 0;
+  text-align: center;
+  border: 0;
+  line-height: 1.4;
+}
+.fr-btn::after { border: 0; }
+.fr-btn.ghost {
+  background: var(--fr-blue-light);
+  color: var(--fr-blue-dark);
+}
+.fr-btn[disabled] { opacity: 0.5; }
+
+/* 空状态 */
+.empty-state {
+  padding: 120rpx 40rpx;
+  text-align: center;
+  color: var(--fr-text2);
+}
+.empty-state .ico { font-size: 88rpx; opacity: 0.5; }
+.empty-state .txt { font-size: 26rpx; margin-top: 24rpx; }

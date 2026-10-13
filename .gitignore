@@ -1,0 +1,38 @@
+# ===== 密钥与环境（红线：绝不入库）=====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== 数据库与测试产物 =====
+*.db
+*.sqlite3
+backend/_test_french.db
+demo/data/*.db-journal
+
+# ===== Node =====
+node_modules/
+dist/
+build/
+
+# ===== 微信开发者工具 =====
+miniprogram/project.private.config.json
+
+# ===== IDE / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

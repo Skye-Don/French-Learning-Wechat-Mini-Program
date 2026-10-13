@@ -1,0 +1,63 @@
+.summary-wrap { padding: 40rpx 32rpx; text-align: center; }
+.sum-title { font-size: 36rpx; font-weight: 600; margin-top: 20rpx; }
+.sum-sub { font-size: 25rpx; margin-top: 12rpx; }
+
+.sum-ring {
+  width: 300rpx; height: 300rpx; margin: 30rpx auto 24rpx;
+  border-radius: 50%;
+  background: conic-gradient(var(--fr-blue) calc(var(--p, 0) * 1%), #e8e5e1 0);
+  display: flex; align-items: center; justify-content: center;
+  --p: 0;
+}
+.pct-inner, .pct {
+  width: 252rpx; height: 252rpx; border-radius: 50%; background: var(--fr-bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.pct-num { font-size: 64rpx; font-weight: 700; color: var(--fr-blue); }
+.pct-label { font-size: 24rpx; color: var(--fr-text2); margin-top: 6rpx; }
+
+.sum-stats { display: flex; gap: 20rpx; margin: 32rpx 0; }
+.stat {
+  flex: 1; background: #fff; border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+  padding: 28rpx 16rpx; text-align: center;
+}
+.stat-b { display: block; font-size: 36rpx; color: var(--fr-blue); font-weight: 700; }
+.stat-s { display: block; font-size: 23rpx; color: var(--fr-text2); margin-top: 6rpx; }
+
+.review-title { font-size: 26rpx; font-weight: 600; margin-bottom: 12rpx; }
+.review-item {
+  display: flex; align-items: flex-start; gap: 20rpx;
+  padding: 20rpx 0; border-bottom: 1rpx solid var(--fr-line);
+}
+.review-item:last-child { border-bottom: 0; }
+.review-dot {
+  width: 36rpx; height: 36rpx; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22rpx; color: #fff; margin-top: 2rpx; flex: 0 0 36rpx;
+}
+.review-dot.ok { background: var(--fr-green); }
+.review-dot.no { background: var(--fr-red); }
+.review-main { flex: 1; min-width: 0; text-align: left; }
+.review-fr { font-size: 27rpx; }
+.review-zh { font-size: 24rpx; color: var(--fr-text2); margin-top: 4rpx; }
+
+/* 打卡动画 */
+.checkin-mask {
+  position: fixed; inset: 0; background: rgba(45, 52, 54, 0.55);
+  display: flex; align-items: center; justify-content: center; z-index: 99;
+}
+.checkin-card {
+  background: #fff; border-radius: 40rpx; padding: 56rpx 64rpx;
+  text-align: center; animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 70%;
+}
+@keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.flame { font-size: 112rpx; animation: flame 1.4s ease-in-out infinite; }
+@keyframes flame {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50% { transform: scale(1.12) rotate(3deg); }
+}
+.checkin-title { font-size: 34rpx; font-weight: 600; margin-top: 16rpx; }
+.checkin-desc { font-size: 26rpx; color: var(--fr-text2); margin-top: 12rpx; line-height: 1.7; }
+.streak-num { font-size: 34rpx; color: var(--fr-red); font-weight: 700; }

@@ -1,0 +1,24 @@
+<view class="page">
+  <block wx:if="{{loading}}">
+    <view class="skel" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+  </block>
+
+  <block wx:else>
+    <view class="fr-card">
+      <view class="lesson-title">{{lesson.title}}</view>
+      <view class="lesson-desc">{{lesson.description}}</view>
+      <view class="muted lesson-count">共 {{total}} 张卡片</view>
+    </view>
+
+    <view class="fr-card">
+      <view class="preview-title">卡片预览</view>
+      <view class="preview-item" wx:for="{{cards}}" wx:key="id" wx:if="{{index < 8}}">
+        <text class="p-fr">{{item.front_text}}</text>
+        <text class="p-zh">{{item.back_text}}</text>
+      </view>
+      <view wx:if="{{total > 8}}" class="muted more">…还有 {{total - 8}} 张</view>
+    </view>
+
+    <button class="fr-btn" bindtap="onStartStudy">开始学习（{{total}} 张）</button>
+  </block>
+</view>

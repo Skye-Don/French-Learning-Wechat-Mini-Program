@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/learn/index",
+    "pages/profile/index",
+    "pages/level/detail",
+    "pages/lesson/detail",
+    "pages/flashcard/study",
+    "pages/flashcard/summary",
+    "pages/checkin/calendar",
+    "pages/settings/reminder",
+    "pages/settings/sensitive"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#5B7FA5",
+    "navigationBarTitleText": "法语学习",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F8F6F3",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#9AA0A4",
+    "selectedColor": "#5B7FA5",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/learn/index",
+        "text": "学习",
+        "iconPath": "assets/icons/learn.png",
+        "selectedIconPath": "assets/icons/learn-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
+      }
+    ]
+  },
+  "usingComponents": true,
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2"
+}

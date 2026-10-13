@@ -1,0 +1,50 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="fr-card" style="height:260rpx"></view>
+
+  <block wx:else>
+    <!-- 头部 -->
+    <view class="profile-head">
+      <view class="avatar">🇫🇷</view>
+      <view>
+        <view class="p-name">{{profile.nickname || '法语学习者'}}</view>
+        <view class="p-level">当前等级：{{profile.current_level || '未设置'}}</view>
+      </view>
+    </view>
+
+    <!-- 学习统计（PRD 5.7） -->
+    <view class="stat-row">
+      <view class="stat"><text class="stat-b">{{profile.total_study_days}}</text><text class="stat-s">学习天数</text></view>
+      <view class="stat"><text class="stat-b">{{profile.total_cards_learned}}</text><text class="stat-s">累计卡片</text></view>
+      <view class="stat"><text class="stat-b">{{profile.streak_days}}</text><text class="stat-s">连续打卡</text></view>
+    </view>
+
+    <!-- 菜单 -->
+    <view class="fr-card menu">
+      <view class="menu-item" bindtap="onCalendar">
+        <text class="menu-ico">📅</text><text class="menu-label">打卡日历</text>
+        <text class="menu-extra">看看坚持了几天</text><text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onReminder">
+        <text class="menu-ico">⚙️</text><text class="menu-label">学习提醒</text>
+        <text class="menu-extra">每天定时提醒</text><text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onSensitive">
+        <text class="menu-ico">📝</text><text class="menu-label">敏感词汇设置</text>
+        <text class="menu-extra">{{profile.sensitive_opt_in ? '已开启全部' : '仅常规词汇'}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <button class="menu-item share-btn" open-type="share">
+        <text class="menu-ico">📤</text><text class="menu-label">分享给好友</text>
+        <text class="menu-extra"></text><text class="menu-arrow">›</text>
+      </button>
+      <view class="menu-item" bindtap="onAbout">
+        <text class="menu-ico">ℹ️</text><text class="menu-label">关于</text>
+        <text class="menu-extra">V0 框架版</text><text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <view style="text-align:center;margin-top:40rpx">
+      <button class="fr-btn ghost reset-btn" bindtap="onReset">清空本地缓存</button>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,34 @@
+<view class="page">
+  <view class="fr-card row">
+    <view>
+      <view class="row-title">每日学习提醒</view>
+      <view class="muted row-sub">开启后将在设定时间推送提醒（V1 生效）</view>
+    </view>
+    <view class="switch {{enabled ? 'on' : ''}}" bindtap="onToggle"><view class="knob"></view></view>
+  </view>
+
+  <view class="fr-card row">
+    <view>
+      <view class="row-title">提醒时间</view>
+      <view class="muted row-sub">建议选你通常有空的时段</view>
+    </view>
+    <picker mode="time" value="{{time}}" bindchange="onTimeChange">
+      <view class="picker-value">{{time}}</view>
+    </picker>
+  </view>
+
+  <view class="fr-card row">
+    <view>
+      <view class="row-title">每日目标卡片数</view>
+      <view class="muted row-sub">影响首页进度展示</view>
+    </view>
+    <input class="goal-input" type="number" value="{{goal}}" bindinput="onGoalInput" />
+  </view>
+
+  <button class="fr-btn" disabled="{{saving}}" bindtap="onSave">{{saving ? '保存中…' : '保存设置'}}</button>
+
+  <view class="muted foot-note">
+    注：微信订阅消息需用户在小程序内逐次授权，V0 仅预留设置项与接口，
+    实际推送能力在 V1 接入 wx.requestSubscribeMessage 后生效
+  </view>
+</view>

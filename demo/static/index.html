@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>法语学习小程序 · H5 预览版</title>
+<link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+
+<div class="stage">
+  <!-- 左侧说明区：仅在宽屏显示，手机上自动隐藏 -->
+  <aside class="side">
+    <div class="side-inner">
+      <div class="brand">
+        <span class="brand-fr">Bonjour</span>
+        <h1>法语学习小程序</h1>
+        <p class="brand-sub">V0 框架版 · H5 预览 Demo</p>
+      </div>
+
+      <div class="qr-card">
+        <div class="qr-box">
+          <img id="qrImg" src="/static/qrcode.png" alt="扫码在手机上体验" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" />
+          <div class="qr-fallback" id="qrFallback" style="display:none">
+            <span>二维码生成中</span>
+          </div>
+        </div>
+        <p class="qr-tip">用手机相机 / 微信扫一扫<br />直接在浏览器打开体验</p>
+      </div>
+
+      <div class="side-note">
+        <h3>这是 H5 预览版，不是微信小程序</h3>
+        <p>微信小程序无法用 http 链接直接打开。此页面按小程序 UI 1:1 复刻，
+           用于<b>在你提交审核之前先验收交互与视觉</b>。</p>
+        <p>真机小程序源码在 <code>miniprogram/</code>，用微信开发者工具导入即可预览；
+           生产后端在 <code>backend/</code>。</p>
+      </div>
+
+      <div class="side-links">
+        <a href="/admin" target="_blank">→ 打开极简内容后台</a>
+        <a href="/health" target="_blank">→ 服务健康检查</a>
+      </div>
+
+      <p class="side-foot">数据存在演示数据库，仅供体验，随时可清空重置</p>
+    </div>
+  </aside>
+
+  <!-- 手机壳 -->
+  <div class="phone" id="phone">
+    <div class="phone-frame">
+      <div class="statusbar">
+        <span id="clock">22:33</span>
+        <span class="statusbar-right">●●● ▲ 100%</span>
+      </div>
+      <div class="navbar" id="navbar">
+        <button class="nav-back" id="navBack" hidden>‹</button>
+        <span class="nav-title" id="navTitle">Bonjour !</span>
+        <span class="nav-right"></span>
+      </div>
+
+      <div class="screen" id="screen">
+        <div class="boot">
+          <div class="boot-logo">Bonjour</div>
+          <div class="boot-dots"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+
+      <div class="tabbar" id="tabbar" hidden>
+        <button class="tab" data-route="#/home"><span class="tab-ico">🏠</span><span>首页</span></button>
+        <button class="tab" data-route="#/learn"><span class="tab-ico">📖</span><span>学习</span></button>
+        <button class="tab" data-route="#/profile"><span class="tab-ico">👤</span><span>我的</span></button>
+      </div>
+
+      <!-- 全局弹层容器 -->
+      <div class="modal-root" id="modalRoot" hidden></div>
+      <div class="toast" id="toast" hidden></div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

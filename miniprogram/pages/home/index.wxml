@@ -1,0 +1,75 @@
+<view class="page">
+  <!-- 骨架屏 -->
+  <block wx:if="{{loading}}">
+    <view class="skel hero-skel"></view>
+    <view class="skel level-skel" wx:for="{{[1,2,3,4]}}" wx:key="*this"></view>
+  </block>
+
+  <!-- 加载失败（PRD 5.4：网络失败 → 重试按钮） -->
+  <block wx:elif="{{loadError}}">
+    <view class="empty-state">
+      <view class="ico">📡</view>
+      <view class="txt">{{loadError}}</view>
+      <button class="fr-btn ghost" style="width:240rpx;margin:32rpx auto 0" bindtap="onRetry">点击重试</button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <!-- 顶部：问候 + 今日目标 -->
+    <view class="hero">
+      <view class="hero-top">
+        <view>
+          <view class="hero-hi">Bonjour !</view>
+          <view class="hero-sub">{{summary.checked_in ? '今天已打卡，继续保持' : '今天还没开始，来学几张卡吧'}}</view>
+        </view>
+        <view class="avatar">🇫🇷</view>
+      </view>
+      <view class="goal-text">
+        <view>今日目标 <text class="goal-num">{{summary.cards_learned_today}}</text> / {{summary.daily_goal}} 张卡片</view>
+        <view class="goal-sub">{{summary.cards_learned_today >= summary.daily_goal ? '今日目标已完成 🎉' : '还差 ' + (summary.daily_goal - summary.cards_learned_today) + ' 张'}}</view>
+      </view>
+      <view class="goal-bar"><view class="goal-bar-in" style="width:{{goalPct}}%"></view></view>
+      <view class="streak-pill">🔥 连续打卡 {{summary.streak_days}} 天</view>
+    </view>
+
+    <!-- 等级入口 -->
+    <view class="section-title">选择等级</view>
+    <view class="level-grid">
+      <view class="level-card {{item.lesson_count === 0 ? 'zero' : ''}}"
+        wx:for="{{levels}}" wx:key="id" bindtap="onLevelTap" data-id="{{item.id}}">
+        <view class="corner"></view>
+        <view class="level-code">{{item.code}}</view>
+        <view class="level-name">{{item.name}}</view>
+        <view class="level-desc">{{item.description}}</view>
+        <view class="level-count">📚 {{item.lesson_count}} 个课时</view>
+      </view>
+    </view>
+
+    <!-- 即将上线占位（对齐 PRD 5.4 原型） -->
+    <view class="section-title">即将上线</view>
+    <view class="fr-card coming">
+      <view class="coming-item"><text>🎧 听力训练</text><text class="tag">V1 敬请期待</text></view>
+      <view class="coming-item"><text>🤖 AI 对话练习</text><text class="tag">V1 敬请期待</text></view>
+      <view class="coming-item"><text>🗣️ 跟读发音评分</text><text class="tag">V1 敬请期待</text></view>
+      <view class="coming-item"><text>🏆 学习排行榜</text><text class="tag">V1 敬请期待</text></view>
+    </view>
+  </block>
+</view>
+
+<!-- 敏感词汇 opt-in 弹窗（PRD 5.2） -->
+<view class="opt-mask" wx:if="{{showOptIn}}">
+  <view class="opt-modal">
+    <view class="opt-title">关于学习内容的设置</view>
+    <view class="opt-desc">法语日常口语里包含一些脏话与冒犯性表达。了解它们有助于听懂真实对话，但你可能并不想学。你希望包含这类内容吗？</view>
+    <view class="opt-item {{optInValue === true ? 'sel' : ''}}" bindtap="onOptInChoose" data-v="1">
+      <view class="opt-item-title">学习全部词汇</view>
+      <view class="opt-item-desc">包含脏话、俗语等真实口语表达（可随时在「我的」里修改）</view>
+    </view>
+    <view class="opt-item {{optInValue === false ? 'sel' : ''}}" bindtap="onOptInChoose" data-v="0">
+      <view class="opt-item-title">仅学习常规词汇</view>
+      <view class="opt-item-desc">跳过所有被标记为敏感的内容（推荐）</view>
+    </view>
+    <button class="fr-btn" bindtap="onOptInConfirm">确认选择</button>
+    <view class="opt-close" bindtap="onOptInClose">暂不选择，仅学习常规词汇</view>
+  </view>
+</view>

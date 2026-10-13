@@ -1,0 +1,28 @@
+.page { padding: 24rpx; }
+.row { display: flex; align-items: center; justify-content: space-between; }
+.row-title { font-size: 28rpx; font-weight: 500; }
+.row-sub { font-size: 24rpx; margin-top: 8rpx; }
+
+.switch {
+  width: 88rpx; height: 52rpx; border-radius: 26rpx;
+  background: var(--fr-line); position: relative; transition: 0.2s; flex: 0 0 88rpx;
+}
+.switch.on { background: var(--fr-green); }
+.knob {
+  position: absolute; top: 6rpx; left: 6rpx; width: 40rpx; height: 40rpx;
+  border-radius: 50%; background: #fff; transition: 0.2s;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+}
+.switch.on .knob { left: 42rpx; }
+
+.picker-value {
+  border: 1rpx solid var(--fr-line); border-radius: 16rpx;
+  padding: 12rpx 24rpx; font-size: 28rpx;
+}
+.goal-input {
+  width: 140rpx; border: 1rpx solid var(--fr-line); border-radius: 16rpx;
+  padding: 12rpx 20rpx; font-size: 28rpx; text-align: center;
+}
+.foot-note {
+  font-size: 23rpx; text-align: center; margin-top: 28rpx; line-height: 1.7;
+}

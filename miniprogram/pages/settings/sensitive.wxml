@@ -1,0 +1,17 @@
+<view class="page">
+  <view class="fr-card">
+    <view class="s-title">敏感词汇学习</view>
+    <view class="muted s-desc">法语日常口语包含脏话与冒犯性表达。了解它们有助于听懂真实对话，但你可以选择不学。关闭后，所有标记为敏感的内容将不会出现在你的学习中。</view>
+  </view>
+
+  <view class="opt-item {{optIn ? 'sel' : ''}}" bindtap="onChoose" data-v="1">
+    <view class="opt-title">学习全部词汇（含敏感词）</view>
+    <view class="opt-desc">包含 merde、putain 等真实口语表达</view>
+  </view>
+  <view class="opt-item {{!optIn ? 'sel' : ''}}" bindtap="onChoose" data-v="0">
+    <view class="opt-title">仅学习常规词汇</view>
+    <view class="opt-desc">跳过所有敏感内容（推荐）</view>
+  </view>
+
+  <view class="muted state" wx:if="{{loaded}}">当前状态：<text class="state-v">{{optIn ? '全部词汇' : '仅常规词汇'}}</text></view>
+</view>

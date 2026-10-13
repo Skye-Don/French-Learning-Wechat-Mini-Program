@@ -1,0 +1,42 @@
+<view class="summary-wrap">
+  <view class="sum-title">学习完成 !</view>
+  <view class="muted sum-sub">本次共学习 {{total}} 张卡片</view>
+
+  <!-- 正确率（conic-gradient 圆环） -->
+  <view class="sum-ring" style="--p: {{pct}}">
+    <view class="pct">
+      <text class="pct-num">{{pct}}%</text>
+      <text class="pct-label">正确率</text>
+    </view>
+  </view>
+
+  <view class="sum-stats">
+    <view class="stat"><text class="stat-b">{{ok}}</text><text class="stat-s">认识</text></view>
+    <view class="stat"><text class="stat-b">{{total - ok}}</text><text class="stat-s">不认识</text></view>
+    <view class="stat"><text class="stat-b stat-duration">{{duration}}</text><text class="stat-s">用时</text></view>
+  </view>
+
+  <view class="fr-card" style="text-align:left">
+    <view class="review-title">本次回顾</view>
+    <view class="review-item" wx:for="{{results}}" wx:key="index">
+      <view class="review-dot {{item.result === 'correct' ? 'ok' : 'no'}}">{{item.result === 'correct' ? '✓' : '✕'}}</view>
+      <view class="review-main">
+        <view class="review-fr">{{item.card.front_text}}</view>
+        <view class="review-zh">{{item.card.back_text}}</view>
+      </view>
+    </view>
+  </view>
+
+  <button class="fr-btn" bindtap="onBackLearn">返回学习</button>
+</view>
+
+<!-- 打卡成功动画（PRD 5.6） -->
+<view class="checkin-mask" wx:if="{{showCheckin}}">
+  <view class="checkin-card">
+    <view class="flame">🔥</view>
+    <view class="checkin-title">打卡成功</view>
+    <view class="checkin-desc">已连续学习 <text class="streak-num">{{streak}}</text> 天</view>
+    <view class="checkin-desc">明天继续，别断掉哦</view>
+    <button class="fr-btn" style="margin-top:32rpx" bindtap="onCloseCheckin">好的</button>
+  </view>
+</view>
