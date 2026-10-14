@@ -6,6 +6,8 @@ Page({
   data: {
     profile: null,
     loading: true,
+    avatarUrl: "", // 本地绑定头像 → 服务端头像，兜底空（显示 🇫🇷）
+    bound: false,
   },
 
   onShow() {
@@ -13,22 +15,30 @@ Page({
   },
 
   load() {
+    this.setData({
+      avatarUrl: wx.getStorageSync("fr_avatar") || "",
+      bound: wx.getStorageSync("fr_bound") === 1,
+    });
     api.get("/api/user/profile")
-      .then((profile) => this.setData({ profile, loading: false }))
+      .then((profile) => {
+        if (!this.data.avatarUrl) this.setData({ avatarUrl: profile.avatar_url || "" });
+        this.setData({ profile, loading: false });
+      })
       .catch((err) => {
         this.setData({ loading: false });
         wx.showToast({ title: err.message, icon: "none" });
       });
   },
 
+  /** 账号绑定：未绑定时进绑定页；已绑定可重新修改头像昵称 */
+  onAccount() {
+    wx.navigateTo({ url: "/pages/auth/welcome" });
+  },
+
   onCalendar() { wx.navigateTo({ url: "/pages/checkin/calendar" }); },
   onReminder() { wx.navigateTo({ url: "/pages/settings/reminder" }); },
   onSensitive() { wx.navigateTo({ url: "/pages/settings/sensitive" }); },
 
-  onShare() {
-    // PRD 5.10：V0 用 open-type=share 的 button 触发；这里做兜底提示
-    wx.showToast({ title: "点击右上角「···」也可转发", icon: "none" });
-  },
   onAbout() {
     wx.showModal({
       title: "关于",
@@ -45,6 +55,8 @@ Page({
       success: (res) => {
         if (res.confirm) {
           auth.logout();
+          wx.removeStorageSync("fr_bound");
+          wx.removeStorageSync("fr_avatar");
           wx.reLaunch({ url: "/pages/home/index" });
         }
       },

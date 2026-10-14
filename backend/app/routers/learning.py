@@ -445,3 +445,39 @@ async def get_profile(
         "sound_enabled": bool(pref.sound_enabled) if pref else True,
         "daily_goal": pref.daily_goal if pref else 20,
     }
+
+
+@router.put("/user/profile")
+async def update_profile(
+    payload: dict,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """更新当前用户资料（昵称/头像）——账号绑定流程使用（PRD 5.1）。
+
+    安全与校验：
+    - 只允许更新白名单字段（nickname / avatar_url），不可越权改 role 等字段
+    - 昵称去首尾空格后 1-50 字符；头像地址最长 500 字符
+    - 头像 V0 阶段为小程序本机文件路径（不上传服务器），V1 接对象存储后改为 URL
+    """
+    updates: dict = {}
+
+    nickname = (payload.get("nickname") or "").strip()
+    if nickname:
+        if len(nickname) > 50:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "昵称最长 50 字符")
+        updates["nickname"] = nickname
+
+    avatar_url = (payload.get("avatar_url") or "").strip()
+    if avatar_url:
+        if len(avatar_url) > 500:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "头像地址过长")
+        updates["avatar_url"] = avatar_url
+
+    if not updates:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "无可更新的字段")
+
+    for k, v in updates.items():
+        setattr(user, k, v)
+    await db.commit()
+    return {"ok": True, **updates}

@@ -9,6 +9,7 @@ Page({
     loading: true,
     loadError: "",
     user: null,
+    avatarUrl: "", // 绑定页保存的本地头像 → 服务端头像，兜底空（显示 🇫🇷）
     summary: null,
     goalPct: 0, // 今日目标完成百分比（进度条用）
     levels: [],
@@ -34,6 +35,8 @@ Page({
       .then((user) => {
         this.setData({
           user,
+          // 头像优先取绑定时保存的本地文件，其次服务端地址
+          avatarUrl: wx.getStorageSync("fr_avatar") || user.avatar_url || "",
           // PRD 5.2：新用户首次进入弹出敏感词汇 opt-in（只弹一次）
           showOptIn: app.consumeNewUserOptInFlag() && !user.sensitive_opt_in,
         });

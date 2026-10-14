@@ -4,7 +4,8 @@
   <block wx:else>
     <!-- 头部 -->
     <view class="profile-head">
-      <view class="avatar">🇫🇷</view>
+      <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar">🇫🇷</view>
       <view>
         <view class="p-name">{{profile.nickname || '法语学习者'}}</view>
         <view class="p-level">当前等级：{{profile.current_level || '未设置'}}</view>
@@ -20,6 +21,10 @@
 
     <!-- 菜单 -->
     <view class="fr-card menu">
+      <view class="menu-item" bindtap="onAccount">
+        <text class="menu-ico">👤</text><text class="menu-label">账号绑定</text>
+        <text class="menu-extra">{{bound ? '已绑定' : '未绑定'}}</text><text class="menu-arrow">›</text>
+      </view>
       <view class="menu-item" bindtap="onCalendar">
         <text class="menu-ico">📅</text><text class="menu-label">打卡日历</text>
         <text class="menu-extra">看看坚持了几天</text><text class="menu-arrow">›</text>
@@ -35,7 +40,7 @@
       </view>
       <button class="menu-item share-btn" open-type="share">
         <text class="menu-ico">📤</text><text class="menu-label">分享给好友</text>
-        <text class="menu-extra"></text><text class="menu-arrow">›</text>
+        <text class="menu-extra">邀请朋友一起学</text><text class="menu-arrow">›</text>
       </button>
       <view class="menu-item" bindtap="onAbout">
         <text class="menu-ico">ℹ️</text><text class="menu-label">关于</text>

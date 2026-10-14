@@ -3,6 +3,9 @@
 // 登录策略（PRD 5.1）：
 //   onLaunch 静默登录 wx.login → 后端 code 换 openid → 返回 JWT
 //   Token 过期时静默刷新，用户无感知
+// 首次启动流程：
+//   登录成功后若从未绑定（fr_bound 不存在）→ 跳转账号绑定页
+//   绑定页完成「微信验证登录 + 头像昵称绑定」→ 进首页 → 敏感词选择
 // 注意：openid 绝不能在前端出现；AppSecret 只能存服务端 .env
 // ============================================================
 const auth = require("./utils/auth");
@@ -27,6 +30,14 @@ App({
     auth.ensureLogin()
       .then((user) => {
         this.globalData.userInfo = user;
+
+        // 首次启动：从未绑定过账号 → 先进绑定页（用户可"暂不绑定"跳过）
+        const bound = wx.getStorageSync("fr_bound");
+        if (!bound) {
+          wx.reLaunch({ url: "/pages/auth/welcome" });
+          return;
+        }
+
         // PRD 5.2：新用户且未选择过 → 首页会自行弹出 opt-in 弹窗
         // 这里只广播一次事件，避免每个页面重复判断
         if (user.is_new_user && !user.sensitive_opt_in) {

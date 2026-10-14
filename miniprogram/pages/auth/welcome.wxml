@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="brand">🇫🇷</view>
+  <view class="title">欢迎使用地道法语学</view>
+  <view class="subtitle">花 10 秒完成账号绑定，学习进度将与你的微信账号同步</view>
+
+  <!-- 隐私承诺（审核合规：收集头像/昵称前必须明示用途） -->
+  <view class="privacy-card">
+    <view class="p-title">🔒 我们会妥善保护你的信息</view>
+    <view class="p-text">你选择的头像与昵称将加密传输、安全存储，仅用于在本小程序内展示和学习进度同步，绝不提供给任何第三方，也不用于广告。你随时可在「我的」页面清除数据。</view>
+  </view>
+
+  <!-- 头像昵称填写（微信官方「头像昵称填写能力」，用户主动选择，无需授权弹窗） -->
+  <view class="form-card">
+    <view class="form-row">
+      <view class="form-label">头像</view>
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar-holder">点击选择</view>
+      </button>
+    </view>
+    <view class="form-row">
+      <view class="form-label">昵称</view>
+      <input class="nick-input" type="nickname" placeholder="点击可快速填入微信昵称"
+        value="{{nickname}}" bindinput="onNickInput" maxlength="20" />
+    </view>
+  </view>
+
+  <button class="fr-btn bind-btn" bindtap="onBind" loading="{{submitting}}">微信一键登录并绑定</button>
+  <view class="skip" bindtap="onSkip">暂不绑定，稍后再说 ›</view>
+
+  <view class="foot-note">登录基于微信安全验证，openid 等敏感标识仅保存在服务端</view>
+</view>

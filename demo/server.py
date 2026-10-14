@@ -773,10 +773,14 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/user/profile" and method == "PUT":
             nickname = body.get("nickname")
             level = body.get("current_level")
+            avatar = (body.get("avatar_url") or "").strip()
             if nickname:
+                nickname = nickname.strip()[:50]  # 昵称上限 50 字符（与生产后端一致）
                 conn.execute("UPDATE users SET nickname=?, updated_at=? WHERE id=?", (nickname, now_iso(), uid))
             if level:
                 conn.execute("UPDATE users SET current_level=?, updated_at=? WHERE id=?", (level, now_iso(), uid))
+            if avatar:
+                conn.execute("UPDATE users SET avatar_url=?, updated_at=? WHERE id=?", (avatar[:500], now_iso(), uid))
             conn.commit()
             return self._json({"ok": True})
 

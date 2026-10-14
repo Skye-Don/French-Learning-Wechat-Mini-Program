@@ -3,41 +3,71 @@
 .profile-head {
   background: linear-gradient(135deg, #5b7fa5, #7a9abf);
   border-radius: 24rpx; padding: 40rpx 32rpx; color: #fff;
-  display: flex; align-items: center; gap: 28rpx;
+  display: flex; align-items: center;
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
 }
+/* 兼容性：不用 gap（老 WebView 内核不支持），用 margin 实现间距 */
+.profile-head > view:last-child { margin-left: 28rpx; }
 .avatar {
   width: 112rpx; height: 112rpx; border-radius: 50%;
   background: rgba(255, 255, 255, 0.25);
   display: flex; align-items: center; justify-content: center;
   font-size: 52rpx; border: 4rpx solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
 }
 .p-name { font-size: 34rpx; font-weight: 600; }
 .p-level { font-size: 24rpx; opacity: 0.85; margin-top: 8rpx; }
 
-.stat-row { display: flex; gap: 20rpx; margin: 24rpx 0; }
+/* 兼容性：不用 gap，用 margin */
+.stat-row { display: flex; margin: 24rpx 0; }
 .stat {
   flex: 1; background: #fff; border-radius: 24rpx;
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
   padding: 28rpx 16rpx; text-align: center;
 }
-.stat-b { display: block; font-size: 44rpx; color: var(--fr-blue); font-weight: 700; }
-.stat-s { display: block; font-size: 23rpx; color: var(--fr-text2); margin-top: 6rpx; }
+.stat + .stat { margin-left: 20rpx; }
+.stat-b { display: block; font-size: 44rpx; color: #5b7fa5; font-weight: 700; }
+.stat-s { display: block; font-size: 23rpx; color: #9aa0a4; margin-top: 6rpx; }
 
 .menu { padding: 0; }
 .menu-item {
   display: flex; align-items: center;
-  padding: 28rpx 32rpx; border-bottom: 1rpx solid var(--fr-line);
+  padding: 28rpx 32rpx; border-bottom: 1rpx solid #f0ebe4;
   font-size: 28rpx; width: 100%; text-align: left;
   background: #fff; border-left: 0; border-right: 0; border-top: 0;
-  font-family: inherit; color: var(--fr-text); line-height: 1.4;
+  font-family: inherit; color: #333; line-height: 1.4;
 }
 .menu-item::after { border: 0; }
 .menu-item:last-child { border-bottom: 0; }
-.menu-item:active { background: var(--fr-bg); }
+.menu-item:active { background: #f8f6f3; }
 .menu-ico { width: 52rpx; font-size: 32rpx; }
 .menu-label { flex: 1; }
-.menu-extra { font-size: 24rpx; color: var(--fr-text2); }
+.menu-extra { font-size: 24rpx; color: #9aa0a4; }
 .menu-arrow { color: #c7c2bc; font-size: 30rpx; margin-left: 12rpx; }
-.share-btn { border-radius: 0; }
+
+/* ============================================================
+   分享给好友：button 默认样式全量重置
+   button 自带 UA 样式（居中文字/加粗字号/最小高度/圆角/::after 边框），
+   仅靠 .menu-item 无法完全覆盖，真机上会显得和其他菜单项不一样。
+   这里显式逐项覆盖，保证与普通 menu-item 完全一致。
+   ============================================================ */
+.share-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 28rpx 32rpx;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #333;
+  font-size: 28rpx;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  font-family: inherit;
+}
+.share-btn::after { display: none; border: 0; }
+.share-btn:active { background: #f8f6f3; }
+
 .reset-btn { width: 320rpx; font-size: 26rpx; }

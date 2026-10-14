@@ -9,7 +9,8 @@
     "pages/flashcard/summary",
     "pages/checkin/calendar",
     "pages/settings/reminder",
-    "pages/settings/sensitive"
+    "pages/settings/sensitive",
+    "pages/auth/welcome"
   ],
   "window": {
     "navigationBarBackgroundColor": "#5B7FA5",

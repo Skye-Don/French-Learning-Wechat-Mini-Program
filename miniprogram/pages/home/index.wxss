@@ -20,7 +20,10 @@
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
   margin-bottom: 8rpx;
 }
-.hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28rpx; }
+.hero-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28rpx;
+}
 .hero-hi { font-size: 40rpx; font-weight: 600; letter-spacing: 2rpx; }
 .hero-sub { font-size: 24rpx; opacity: 0.85; margin-top: 6rpx; }
 .avatar {
@@ -38,15 +41,26 @@
 }
 .goal-bar-in { height: 100%; background: #fff; border-radius: 6rpx; transition: width 0.4s; }
 .streak-pill {
-  display: inline-flex; align-items: center; gap: 8rpx;
+  display: inline-flex; align-items: center;
   background: rgba(255, 255, 255, 0.22);
   border-radius: 40rpx; padding: 8rpx 20rpx; font-size: 24rpx;
 }
 
-/* 等级网格 */
-.level-grid { display: flex; flex-wrap: wrap; gap: 24rpx; }
+/* ============================================================
+   等级网格（一行两个）
+   兼容性写法：不用 gap / calc（部分老 WebView 内核不支持，
+   曾导致真机降级成单列）。用 space-between + 48.5% 宽度。
+   ============================================================ */
+.level-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
 .level-card {
-  width: calc(50% - 12rpx);
+  /* 48.5% + space-between：两列之间自然留出约 3% 间距 */
+  width: 48.5%;
+  box-sizing: border-box;
+  margin-bottom: 24rpx;
   background: #fff; border-radius: 24rpx;
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
   padding: 32rpx 28rpx; position: relative; overflow: hidden;
@@ -61,28 +75,29 @@
 .level-card:nth-child(2) .corner { background: #fbefed; }
 .level-card:nth-child(3) .corner { background: #eaf3ef; }
 .level-card:nth-child(4) .corner { background: #fbf3e6; }
-.level-code { font-size: 52rpx; font-weight: 700; letter-spacing: 2rpx; color: var(--fr-blue); position: relative; }
-.level-name { font-size: 25rpx; margin-top: 2rpx; position: relative; }
+.level-code { font-size: 48rpx; font-weight: 700; letter-spacing: 2rpx; color: #5b7fa5; position: relative; }
+.level-name { font-size: 24rpx; margin-top: 2rpx; position: relative; }
 .level-desc {
-  font-size: 22rpx; color: var(--fr-text2);
-  margin-top: 12rpx; line-height: 1.5; height: 64rpx; overflow: hidden; position: relative;
+  font-size: 22rpx; color: #9aa0a4;
+  margin-top: 12rpx; line-height: 1.5; height: 66rpx; overflow: hidden; position: relative;
 }
-.level-count { font-size: 22rpx; color: var(--fr-blue); margin-top: 16rpx; position: relative; }
+.level-count { font-size: 22rpx; color: #5b7fa5; margin-top: 16rpx; position: relative; }
 
 /* 即将上线 */
 .coming-item {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18rpx 0; border-bottom: 1rpx dashed var(--fr-line); font-size: 26rpx;
+  padding: 18rpx 0; border-bottom: 1rpx dashed #e8e2da; font-size: 26rpx;
 }
 .coming-item:last-child { border-bottom: 0; }
 .coming-item .tag {
-  font-size: 22rpx; color: var(--fr-text2);
-  background: var(--fr-bg); padding: 6rpx 16rpx; border-radius: 20rpx;
+  font-size: 22rpx; color: #9aa0a4;
+  background: #f8f6f3; padding: 6rpx 16rpx; border-radius: 20rpx;
 }
 
 /* 敏感词 opt-in 弹窗 */
 .opt-mask {
-  position: fixed; inset: 0; background: rgba(45, 52, 54, 0.5);
+  position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(45, 52, 54, 0.5);
   display: flex; align-items: center; justify-content: center; z-index: 99; padding: 48rpx;
 }
 .opt-modal {
@@ -91,11 +106,11 @@
 }
 @keyframes optIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .opt-title { font-size: 32rpx; font-weight: 600; text-align: center; }
-.opt-desc { font-size: 26rpx; color: var(--fr-text2); line-height: 1.75; text-align: center; margin: 20rpx 0 30rpx; }
+.opt-desc { font-size: 26rpx; color: #9aa0a4; line-height: 1.75; text-align: center; margin: 20rpx 0 30rpx; }
 .opt-item {
-  border: 3rpx solid var(--fr-line); border-radius: 24rpx; padding: 28rpx; margin-bottom: 20rpx;
+  border: 3rpx solid #e8e2da; border-radius: 24rpx; padding: 28rpx; margin-bottom: 20rpx;
 }
-.opt-item.sel { border-color: var(--fr-blue); background: var(--fr-blue-light); }
+.opt-item.sel { border-color: #5b7fa5; background: #edf3f8; }
 .opt-item-title { font-size: 28rpx; font-weight: 600; }
-.opt-item-desc { font-size: 24rpx; color: var(--fr-text2); margin-top: 10rpx; line-height: 1.6; }
-.opt-close { text-align: center; font-size: 24rpx; color: var(--fr-text2); margin-top: 24rpx; padding: 8rpx; }
+.opt-item-desc { font-size: 24rpx; color: #9aa0a4; margin-top: 10rpx; line-height: 1.6; }
+.opt-close { text-align: center; font-size: 24rpx; color: #9aa0a4; margin-top: 24rpx; padding: 8rpx; }
