@@ -1,24 +1,21 @@
 <view class="page">
   <block wx:if="{{loading}}">
-    <view class="skel" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+    <view class="skel" wx:for="{{[1,2]}}" wx:key="*this"></view>
   </block>
 
   <block wx:else>
-    <view class="fr-card">
-      <view class="lesson-title">{{lesson.title}}</view>
-      <view class="lesson-desc">{{lesson.description}}</view>
-      <view class="muted lesson-count">共 {{total}} 张卡片</view>
+    <!-- 话题信息（简洁版：大标题 + 描述 + 数量） -->
+    <view class="hero">
+      <view class="hero-title">{{lesson.title}}</view>
+      <view class="hero-desc">{{lesson.description}}</view>
+      <view class="hero-count">共 {{total}} 张卡片</view>
     </view>
 
-    <view class="fr-card">
-      <view class="preview-title">卡片预览</view>
-      <view class="preview-item" wx:for="{{cards}}" wx:key="id" wx:if="{{index < 8}}">
-        <text class="p-fr">{{item.front_text}}</text>
-        <text class="p-zh">{{item.back_text}}</text>
-      </view>
-      <view wx:if="{{total > 8}}" class="muted more">…还有 {{total - 8}} 张</view>
+    <!-- 选择本次背卡数量 -->
+    <view class="start-tip">选择本次要背的数量</view>
+    <view class="start-btns">
+      <button wx:if="{{btn5}}" class="fr-btn start-btn" bindtap="onStartStudy" data-count="5">{{btn5}}</button>
+      <button wx:if="{{btn10}}" class="fr-btn start-btn start-btn-alt" bindtap="onStartStudy" data-count="{{count10}}">{{btn10}}</button>
     </view>
-
-    <button class="fr-btn" bindtap="onStartStudy">开始学习（{{total}} 张）</button>
   </block>
 </view>

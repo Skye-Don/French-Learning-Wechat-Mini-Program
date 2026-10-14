@@ -114,3 +114,12 @@
 .opt-item-title { font-size: 28rpx; font-weight: 600; }
 .opt-item-desc { font-size: 24rpx; color: #9aa0a4; margin-top: 10rpx; line-height: 1.6; }
 .opt-close { text-align: center; font-size: 24rpx; color: #9aa0a4; margin-top: 24rpx; padding: 8rpx; }
+
+/* 默认头像占位：白色人形剪影（深色头部背景适配） */
+.avatar-holder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; overflow: hidden; border-radius: 50%;
+}
+.ph-head { width: 32%; height: 32%; border-radius: 50%; background: rgba(255,255,255,0.9); margin-bottom: 6%; }
+.ph-body { width: 62%; height: 30%; border-radius: 50% 50% 0 0; background: rgba(255,255,255,0.9); }

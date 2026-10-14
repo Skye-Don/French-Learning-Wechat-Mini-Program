@@ -25,16 +25,39 @@
 .form-row:last-child { border-bottom: 0; }
 .form-label { width: 110rpx; font-size: 28rpx; color: #333; }
 
-/* 头像选择按钮：重置 button 默认样式 */
+/* 头像选择按钮：重置 button 默认样式，圆形浅底 + 人形剪影占位 */
 .avatar-btn {
   width: 128rpx; height: 128rpx; padding: 0; margin: 0;
-  border-radius: 50%; overflow: hidden;
-  background: #f8f6f3; border: 2rpx dashed #d8d2c9;
+  border-radius: 50%; overflow: hidden; position: relative;
+  background: #EDF3F8; border: none;
   display: flex; align-items: center; justify-content: center;
 }
 .avatar-btn::after { border: 0; }
 .avatar-img { width: 128rpx; height: 128rpx; display: block; }
-.avatar-holder { font-size: 22rpx; color: #9aa0a4; }
+
+/* 默认占位：品牌色人形剪影（头 + 半身），类似系统默认头像效果 */
+.avatar-holder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; overflow: hidden;
+}
+.ph-head {
+  width: 40rpx; height: 40rpx; border-radius: 50%;
+  background: #5B7FA5; margin-bottom: 10rpx;
+}
+.ph-body {
+  width: 80rpx; height: 42rpx;
+  border-radius: 42rpx 42rpx 0 0;
+  background: #5B7FA5;
+}
+/* 右下角相机角标：白描边小圆，提示可点击更换头像 */
+.avatar-cam {
+  position: absolute; right: 0; bottom: 0;
+  width: 42rpx; height: 42rpx; border-radius: 50%;
+  background: #5B7FA5;
+  border: 4rpx solid #fff; box-sizing: content-box;
+  font-size: 20rpx; line-height: 42rpx; text-align: center;
+}
 
 .nick-input { flex: 1; font-size: 28rpx; }
 

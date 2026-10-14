@@ -10,28 +10,28 @@
       <text class="progress-txt">{{idx + 1}} / {{cards.length}}</text>
     </view>
 
-    <!-- 翻转卡片 -->
-    <view class="flip-card {{flipped ? 'flipped' : ''}}" bindtap="onFlip">
-      <view class="flip-inner">
-        <!-- 正面：法语 -->
-        <view class="flip-face">
-          <view class="fc-front">{{card.front_text}}</view>
-          <view class="fc-tags" wx:if="{{card.tags.length}}">
-            <text wx:for="{{card.tags}}" wx:key="*this" class="fc-tag-item">#{{item}}</text>
-          </view>
-          <view class="fc-hint">点击卡片翻面看释义</view>
+    <!-- 卡片：两态切换（点击翻面）。不用 3D transform —— inset / backface-visibility
+         在部分老安卓 WebView 上失效会导致卡片错位、正反面内容透出被裁 -->
+    <view class="study-card" bindtap="onFlip">
+      <!-- 正面：法语 -->
+      <view wx:if="{{!flipped}}" class="card-face card-front">
+        <view class="fc-front">{{card.front_text}}</view>
+        <view class="fc-tags" wx:if="{{card.tags.length}}">
+          <text wx:for="{{card.tags}}" wx:key="*this" class="fc-tag-item">#{{item}}</text>
         </view>
-        <!-- 背面：中文 + 例句 + 地道提示 -->
-        <view class="flip-face flip-back">
-          <view class="fc-sensitive" wx:if="{{card.is_sensitive}}">敏感词汇</view>
-          <view class="fc-back-main">{{card.front_text}}</view>
-          <view class="fc-back-sub">{{card.back_text}}</view>
-          <view class="fc-example" wx:if="{{card.example_sentence}}">
-            <view class="fc-ex-fr">{{card.example_sentence}}</view>
-            <view class="fc-ex-zh" wx:if="{{card.example_translation}}">{{card.example_translation}}</view>
-          </view>
-          <view class="fc-tip" wx:if="{{card.tip}}">💡 {{card.tip}}</view>
+        <view class="fc-hint">点击卡片翻面看释义</view>
+      </view>
+      <!-- 背面：中文 + 例句 + 地道提示 -->
+      <view wx:else class="card-face card-back">
+        <view class="fc-sensitive" wx:if="{{card.is_sensitive}}">敏感词汇</view>
+        <view class="fc-back-main">{{card.front_text}}</view>
+        <view class="fc-back-sub">{{card.back_text}}</view>
+        <view class="fc-example" wx:if="{{card.example_sentence}}">
+          <view class="fc-ex-fr">{{card.example_sentence}}</view>
+          <view class="fc-ex-zh" wx:if="{{card.example_translation}}">{{card.example_translation}}</view>
         </view>
+        <view class="fc-tip" wx:if="{{card.tip}}">💡 {{card.tip}}</view>
+        <view class="fc-hint">点击卡片翻回正面</view>
       </view>
     </view>
 

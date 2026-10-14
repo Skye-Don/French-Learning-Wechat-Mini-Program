@@ -23,7 +23,7 @@
           <view class="hero-sub">{{summary.checked_in ? '今天已打卡，继续保持' : '今天还没开始，来学几张卡吧'}}</view>
         </view>
         <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
-        <view wx:else class="avatar">🇫🇷</view>
+        <view wx:else class="avatar"><view class="avatar-holder"><view class="ph-head"></view><view class="ph-body"></view></view></view>
       </view>
       <view class="goal-text">
         <view>今日目标 <text class="goal-num">{{summary.cards_learned_today}}</text> / {{summary.daily_goal}} 张卡片</view>

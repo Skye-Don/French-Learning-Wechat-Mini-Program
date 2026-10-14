@@ -5,7 +5,7 @@
     <!-- 头部 -->
     <view class="profile-head">
       <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
-      <view wx:else class="avatar">🇫🇷</view>
+      <view wx:else class="avatar"><view class="avatar-holder"><view class="ph-head"></view><view class="ph-body"></view></view></view>
       <view>
         <view class="p-name">{{profile.nickname || '法语学习者'}}</view>
         <view class="p-level">当前等级：{{profile.current_level || '未设置'}}</view>

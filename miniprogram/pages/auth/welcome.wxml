@@ -15,7 +15,13 @@
       <view class="form-label">头像</view>
       <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
         <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
-        <view wx:else class="avatar-holder">点击选择</view>
+        <!-- 默认占位：浅色圆底 + 人形剪影（品牌色） -->
+        <view wx:else class="avatar-holder">
+          <view class="ph-head"></view>
+          <view class="ph-body"></view>
+        </view>
+        <!-- 右下角相机角标：提示可点击更换 -->
+        <view class="avatar-cam">📷</view>
       </button>
     </view>
     <view class="form-row">

@@ -19,16 +19,24 @@ Page({
     if (options.mode === "review") {
       this.loadReview();
     } else if (options.lesson_id) {
-      this.loadLesson(options.lesson_id);
+      // count：本次要背的数量（课时详情页选 5 张 / 10 张 / 全部；0 表示全部）
+      this.loadLesson(options.lesson_id, Number(options.count) || 0);
     } else {
       wx.showToast({ title: "参数缺失", icon: "none" });
       setTimeout(() => wx.navigateBack(), 800);
     }
   },
 
-  loadLesson(lessonId) {
+  loadLesson(lessonId, count) {
     api.get("/api/lessons/" + lessonId + "/flashcards")
-      .then((d) => this.start(d.items, lessonId, ""))
+      .then((d) => {
+        let items = d.items || [];
+        // 随机取样 count 张：保证每次"背 5 张"内容不同，而不是永远前 N 张
+        if (count && count < items.length) {
+          items = items.slice().sort(() => Math.random() - 0.5).slice(0, count);
+        }
+        this.start(items, lessonId, "");
+      })
       .catch((err) => this.fail(err));
   },
 
