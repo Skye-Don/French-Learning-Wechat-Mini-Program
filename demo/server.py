@@ -212,6 +212,18 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
     created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS learning_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    event_type TEXT NOT NULL,
+    reference_id INTEGER,
+    payload TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_learning_events_user ON learning_events(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_learning_events_type ON learning_events(event_type, created_at);
+
 CREATE INDEX IF NOT EXISTS idx_lessons_level ON lessons(level_id, status);
 CREATE INDEX IF NOT EXISTS idx_flashcards_lesson ON flashcards(lesson_id, status);
 CREATE INDEX IF NOT EXISTS idx_progress_user ON flashcard_progress(user_id, status);
@@ -230,6 +242,12 @@ CEFR_LEVELS = ("A1", "A2", "B1", "B2")
 
 # 旧数字难度 -> CEFR 等级（历史数据/旧客户端兼容映射）
 _NUM_TO_CEFR = {1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "B2"}
+
+# 行为埋点允许的事件类型（与 backend/app/routers/analytics.EVENT_TYPES 保持一致）
+EVENT_TYPES = (
+    "app_launch", "lesson_open", "flashcard_study", "flashcard_review",
+    "checkin", "level_select", "sensitive_opt_toggle",
+)
 
 
 def norm_level(v) -> str:
@@ -702,6 +720,27 @@ class Handler(BaseHTTPRequestHandler):
                 "extracted_token": (self._extract_token() or "")[:8],
             })
 
+        # 行为数据看板（demo 版，公开可看，不做权限校验；生产后端在 require_admin_user 下计算）
+        if path == "/api/analytics/dashboard" and method == "GET":
+            now_utc = datetime.now(timezone.utc)
+            d1 = (now_utc - timedelta(days=1)).isoformat()
+            d7 = (now_utc - timedelta(days=7)).isoformat()
+            total_users = conn.execute("SELECT COUNT(*) c FROM users").fetchone()["c"]
+            events_1d = conn.execute("SELECT COUNT(*) c FROM learning_events WHERE created_at >= ?", (d1,)).fetchone()["c"]
+            events_7d = conn.execute("SELECT COUNT(*) c FROM learning_events WHERE created_at >= ?", (d7,)).fetchone()["c"]
+            active_1d = conn.execute("SELECT COUNT(DISTINCT user_id) c FROM learning_events WHERE created_at >= ?", (d1,)).fetchone()["c"]
+            active_7d = conn.execute("SELECT COUNT(DISTINCT user_id) c FROM learning_events WHERE created_at >= ?", (d7,)).fetchone()["c"]
+            top = conn.execute(
+                "SELECT reference_id, COUNT(*) c FROM learning_events"
+                " WHERE event_type IN ('flashcard_study','flashcard_review') AND reference_id IS NOT NULL AND created_at >= ?"
+                " GROUP BY reference_id ORDER BY c DESC LIMIT 10", (d7,)).fetchall()
+            top_cards_7d = [{"flashcard_id": r["reference_id"], "count": r["c"]} for r in top]
+            lvl = conn.execute("SELECT current_level, COUNT(*) c FROM users GROUP BY current_level").fetchall()
+            level_distribution = [{"level": (r["current_level"] or "未设置"), "count": r["c"]} for r in lvl]
+            return self._json({"total_users": total_users, "active_users_1d": active_1d,
+                               "active_users_7d": active_7d, "events_1d": events_1d, "events_7d": events_7d,
+                               "top_cards_7d": top_cards_7d, "level_distribution": level_distribution})
+
         # 以下接口需要登录态，demo 用 Authorization: Bearer demo.<uid>.<openid>
         uid = self._current_user_id(conn)
         if uid is None:
@@ -764,6 +803,36 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/user/today-summary":
             return self._json(today_summary(conn, uid))
+
+        if path == "/api/analytics/track" and method == "POST":
+            events = body.get("events")
+            if not isinstance(events, list) or not events:
+                return self._err(400, "events 必须是非空数组")
+            if len(events) > 50:
+                return self._err(400, "单次最多上报 50 条")
+            ts = now_iso()
+            accepted = 0
+            for e in events:
+                if not isinstance(e, dict):
+                    continue
+                et = (e.get("event_type") or "").strip()
+                if et not in EVENT_TYPES:
+                    continue
+                if not et or len(et) > 40:
+                    continue
+                pl = e.get("payload")
+                ref = None
+                if isinstance(pl, dict):
+                    raw = pl.get("flashcard_id") or pl.get("lesson_id") or pl.get("reference_id")
+                    ref = raw if isinstance(raw, int) and not isinstance(raw, bool) else None
+                conn.execute(
+                    "INSERT INTO learning_events (user_id, event_type, reference_id, payload, created_at)"
+                    " VALUES (?,?,?,?,?)",
+                    (uid, et, ref, json.dumps(pl, ensure_ascii=False) if pl is not None else None, ts),
+                )
+                accepted += 1
+            conn.commit()
+            return self._json({"accepted": accepted})
 
         # ========== 学习（PRD 8.3）==========
         if path == "/api/levels" and method == "GET":
@@ -964,7 +1033,7 @@ class Handler(BaseHTTPRequestHandler):
                 ).fetchone()["c"],
             })
 
-        return self._err(404, "接口不存在: " + path)
+
 
     def _extract_token(self):
         """取 token，按优先级：X-Auth-Token > ?token= > Authorization。

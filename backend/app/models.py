@@ -3,7 +3,7 @@
 from datetime import date, datetime, time, timezone
 
 from sqlalchemy import (
-    Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, Time, UniqueConstraint,
+    Boolean, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, Time, UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -196,3 +196,29 @@ class SystemSetting(Base, TimestampMixin):
     setting_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     setting_value: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
+
+
+class LearningEvent(Base):
+    """用户行为埋点（V0 数据分析）：启动 / 学习 / 打卡 / 选级等行为事件。
+
+    - user_id：行为归属用户（必填，外键级联删除）
+    - event_type：白名单事件（见 routers/analytics.EVENT_TYPES）
+    - reference_id：关联的卡/课时 ID（按事件类型解释，便于热门统计）
+    - payload：任意业务参数（JSON）
+    - created_at：aware UTC
+    """
+
+    __tablename__ = "learning_events"
+    __table_args__ = (
+        Index("ix_learning_events_user_created", "user_id", "created_at"),
+        Index("ix_learning_events_type_created", "event_type", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    reference_id: Mapped[int | None] = mapped_column(Integer)
+    payload: Mapped[dict | None] = mapped_column(JSONType)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False)

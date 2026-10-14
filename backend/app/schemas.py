@@ -155,3 +155,34 @@ class AdminUserStatusUpdate(BaseModel):
 
 class AdminSettingUpdate(BaseModel):
     value: str = Field(..., min_length=0, max_length=2000)
+
+
+# ---------- 埋点分析（V0）----------
+class TrackEvent(BaseModel):
+    event_type: str = Field(..., min_length=1, max_length=40)
+    payload: dict | None = None
+
+
+class TrackBatch(BaseModel):
+    events: list[TrackEvent] = Field(..., min_length=1, max_length=50)
+
+
+class TopCardStat(BaseModel):
+    flashcard_id: int
+    count: int
+    front_text: str | None = None
+
+
+class LevelStat(BaseModel):
+    level: str
+    count: int
+
+
+class AnalyticsDashboard(BaseModel):
+    total_users: int
+    active_users_1d: int
+    active_users_7d: int
+    events_1d: int
+    events_7d: int
+    top_cards_7d: list[TopCardStat]
+    level_distribution: list[LevelStat]

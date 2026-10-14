@@ -12,6 +12,7 @@ from .config import settings
 from .database import engine
 from .models import Base
 from .routers import admin as admin_pkg
+from .routers import analytics as analytics_router
 from .routers import auth as auth_router
 from .routers import learning as learning_router
 from .routers.admin import admin_auth_router
@@ -23,6 +24,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 logger = logging.getLogger("french")
+
 
 app = FastAPI(
     title="法语学习小程序 API",
@@ -66,6 +68,7 @@ async def access_log(request: Request, call_next):
 # ---------- 路由注册 ----------
 app.include_router(auth_router.router)
 app.include_router(learning_router.router)
+app.include_router(analytics_router.router)              # /api/analytics/*（V0 行为分析）
 app.include_router(admin_auth_router)                      # /api/admin/auth/*
 app.include_router(admin_pkg.admin_flashcards_router)      # /api/admin/flashcards/*
 app.include_router(admin_pkg.admin_lessons_router)         # /api/admin/lessons/*、/levels/*

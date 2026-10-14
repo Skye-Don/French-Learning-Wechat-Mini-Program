@@ -1,6 +1,7 @@
 // 首页：等级入口 + 今日概览（PRD 5.4）
 const api = require("../../utils/request");
 const auth = require("../../utils/auth");
+const { track } = require("../../utils/track");
 const app = getApp();
 
 Page({
@@ -20,6 +21,8 @@ Page({
   },
 
   onShow() {
+    // V0 行为分析：首页曝光
+    track("page_view", { page: "home" });
     // 从学习页返回时刷新统计
     if (!this.data.loading && this.data.user) {
       this.refreshSummary();
@@ -72,10 +75,12 @@ Page({
       wx.showToast({ title: "该等级暂无课时", icon: "none" });
       return;
     }
+    track("level_select", { level_id: Number(id) });
     wx.navigateTo({ url: "/pages/level/detail?id=" + id });
   },
 
   onGoStudy() {
+    track("page_view", { page: "learn_entry" });
     wx.switchTab({ url: "/pages/learn/index" });
   },
 
@@ -89,6 +94,7 @@ Page({
       return;
     }
     const v = this.data.optInValue;
+    track("sensitive_opt_toggle", { value: v });
     api.post("/api/user/preferences/sensitive-opt-in", { sensitive_opt_in: v })
       .then(() => {
         this.setData({ showOptIn: false });

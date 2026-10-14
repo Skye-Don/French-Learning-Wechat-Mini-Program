@@ -291,3 +291,61 @@ async def test_cefr_difficulty_levels():
         # 5) 非法筛选值 → 422
         r = await client.get("/api/admin/flashcards?level=C2", headers=h)
         assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_analytics_track_and_dashboard():
+    """V0 行为埋点：小程序上报 → 看板聚合。
+
+    对应需求：用户行为数据分析（埋点选 A 方案）。
+    """
+    sf = _session_factory()
+    _, lesson_id, card_ids = await _seed_content(sf)
+    await _mk_admin(sf, username="analytics-admin")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1) 未登录上报 → 401
+        r = await client.post("/api/analytics/track", json={"events": [
+            {"event_type": "app_launch", "payload": {}},
+        ]})
+        assert r.status_code == 401
+
+        # 2) 造用户 + token
+        async with sf() as db:
+            u = User(wx_openid="test-openid-analytics", nickname="埋点用户", role="learner")
+            db.add(u)
+            await db.flush()
+            db.add(UserPreference(user_id=u.id))
+            await db.commit()
+            uid = u.id
+        h = {"Authorization": f"Bearer {create_token(uid, 'learner')}"}
+
+        # 3) 上报：合法 + 非法事件混合，非法应被丢弃
+        r = await client.post("/api/analytics/track", headers=h, json={"events": [
+            {"event_type": "app_launch", "payload": {"channel": "weapp"}},
+            {"event_type": "flashcard_study", "payload": {"flashcard_id": card_ids[0]}},
+            {"event_type": "not_a_real_event", "payload": {}},  # 非白名单 → 丢弃
+            {"event_type": "level_select", "payload": {"level_id": 1}},
+        ]})
+        assert r.status_code == 200
+        assert r.json()["accepted"] == 3, "非白名单事件应被丢弃"
+
+        # 4) 空数组 / 超长 → 422（schema 校验）
+        r = await client.post("/api/analytics/track", headers=h, json={"events": []})
+        assert r.status_code == 422
+
+        # 5) 看板：仅管理员可访问 → learner 401
+        r = await client.get("/api/analytics/dashboard", headers=h)
+        assert r.status_code == 401
+
+        # 6) 管理员看板：能拿到聚合数据
+        r = await client.post("/api/admin/auth/login",
+                              json={"username": "analytics-admin", "password": "Admin@12345"})
+        ah = {"Authorization": f"Bearer {r.json()['token']}"}
+        r = await client.get("/api/analytics/dashboard", headers=ah)
+        assert r.status_code == 200, r.text
+        d = r.json()
+        assert d["total_users"] >= 1
+        assert d["events_7d"] >= 3
+        assert any(c["flashcard_id"] == card_ids[0] for c in d["top_cards_7d"]), "热门卡片应包含已学习的卡"

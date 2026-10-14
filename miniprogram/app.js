@@ -6,6 +6,7 @@
 // 注意：openid 绝不能在前端出现；AppSecret 只能存服务端 .env
 // ============================================================
 const auth = require("./utils/auth");
+const { track, flush } = require("./utils/track");
 
 App({
   globalData: {
@@ -31,10 +32,18 @@ App({
         if (user.is_new_user && !user.sensitive_opt_in) {
           this._isNewPendingOptIn = true;
         }
+        // V0 行为分析：应用启动事件 + 把登录前可能攒下的队列补发
+        track("app_launch", { channel: "weapp", is_new_user: !!user.is_new_user });
+        flush();
       })
       .catch((err) => {
         console.warn("[app] 静默登录失败（弱网或后端异常），页面将使用兜底逻辑", err);
       });
+  },
+
+  onHide() {
+    // 切后台时把本地埋点队列补发一次
+    try { flush(); } catch (e) { /* 不影响主流程 */ }
   },
 
   /** 首页调用：是否需要弹敏感词 opt-in（只弹一次） */
