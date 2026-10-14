@@ -4,14 +4,45 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235B7FA5'/%3E%3Crect x='6' y='8' width='6' height='16' fill='%23fff'/%3E%3Crect x='13' y='8' width='6' height='16' fill='%23D4837A'/%3E%3Crect x='20' y='8' width='6' height='16' fill='%23fff'/%3E%3C/svg%3E" />
-<title>内容管理 · 法语学习小程序（V0 极简后台）</title>
+<title>管理后台 · 法语学习小程序</title>
 <style>
   :root{--blue:#5B7FA5;--blue-d:#4A6C8F;--blue-l:#EDF2F7;--red:#D4837A;--bg:#F8F6F3;--text:#2D3436;--text2:#636E72;--line:#E8E5E1;--green:#7CB69D}
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+
+  /* ============ 登录页 ============ */
+  #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+    background:linear-gradient(160deg,#5B7FA5 0%,#7A9ABF 55%,#D4837A 130%)}
+  .login-card{background:#fff;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.18);padding:36px 34px;width:100%;max-width:380px}
+  .login-card .logo{width:52px;height:52px;border-radius:12px;background:var(--blue);margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
+  .login-card h1{margin:0 0 4px;font-size:19px;text-align:center}
+  .login-card .sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:24px}
+  .login-card label{display:block;font-size:12px;color:var(--text2);margin-bottom:14px}
+  .login-card label input{width:100%}
+  .login-card .btn{width:100%;padding:11px;font-size:14px;margin-top:6px}
+  #loginMsg{font-size:12px;color:var(--red);text-align:center;min-height:18px;margin-top:10px}
+  .login-tip{font-size:11px;color:var(--text2);text-align:center;margin-top:14px;line-height:1.7}
+
+  /* ============ 主框架 ============ */
+  #appView{display:none}
   header{background:linear-gradient(135deg,#5B7FA5,#7A9ABF);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between}
   header h1{margin:0;font-size:18px;font-weight:600}
   header .sub{font-size:12px;opacity:.85;margin-top:3px}
+  header .ops{display:flex;align-items:center;gap:14px}
+  header .ops a{color:#fff;font-size:13px;text-decoration:none;opacity:.9}
+  header .ops a:hover{opacity:1}
+  #btnLogout{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);
+    border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+  #btnLogout:hover{background:rgba(255,255,255,.28)}
+
+  nav{background:#fff;border-bottom:1px solid var(--line);padding:0 28px;display:flex;gap:4px}
+  nav button{background:none;border:0;border-bottom:3px solid transparent;padding:13px 16px 11px;
+    font-size:14px;color:var(--text2);cursor:pointer;font-family:inherit}
+  nav button.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+  nav button:hover{color:var(--blue)}
+
+  section.tab{display:none}
+  section.tab.on{display:block}
   .wrap{max-width:1080px;margin:0 auto;padding:22px}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
   .stat{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
@@ -21,7 +52,7 @@
   .panel h2{margin:0 0 14px;font-size:15px}
   .toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
   input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;outline:none}
-  input:focus,textarea:focus{border-color:var(--blue)}
+  input:focus,textarea:focus,select:focus{border-color:var(--blue)}
   .btn{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit}
   .btn.ghost{background:var(--blue-l);color:var(--blue-d)}
   .btn.danger{background:var(--red)}
@@ -31,7 +62,6 @@
   tr:last-child td{border-bottom:0}
   .tag{display:inline-block;background:var(--blue-l);color:var(--blue-d);border-radius:6px;padding:2px 7px;font-size:11px;margin-right:4px}
   .tag.warn{background:#FBEFED;color:var(--red)}
-  /* CEFR 难度徽标：A1 -> B2 由浅到深（品牌色系，与小程序等级卡一致） */
   .tag.lvl-A1{background:#EDF3F8;color:#5B7FA5}
   .tag.lvl-A2{background:#E6F1EC;color:#4E8C74}
   .tag.lvl-B1{background:#FBF2E2;color:#B8892F}
@@ -45,79 +75,150 @@
   .empty{padding:30px;text-align:center;color:var(--text2);font-size:13px}
   .note{font-size:12px;color:var(--text2);line-height:1.8;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
   code{background:var(--blue-l);color:var(--blue-d);padding:1px 5px;border-radius:4px}
-  @media(max-width:720px){.stats{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}}
+  .muted{color:var(--text2)}
+  /* 数据概览两栏布局 */
+  .ov-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+  .bar-row{display:flex;align-items:center;margin-bottom:10px;font-size:12px}
+  .bar-row .bl{width:88px;color:var(--text2);flex-shrink:0}
+  .bar-row .bar{flex:1;height:14px;background:var(--blue-l);border-radius:7px;overflow:hidden}
+  .bar-row .bar i{display:block;height:100%;background:var(--blue);border-radius:7px}
+  .bar-row .bn{width:44px;text-align:right;color:var(--blue-d);flex-shrink:0}
+  @media(max-width:720px){.stats{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.ov-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>内容管理 · 法语学习小程序</h1>
-    <div class="sub">V0 极简后台 — 仅用于录入/校对闪卡内容，完整后台见 admin/（Vue 3 + Element Plus）</div>
-  </div>
-  <a href="/" target="_blank" style="color:#fff;font-size:13px">← 回到小程序预览</a>
-</header>
 
-<div class="wrap">
-  <div class="stats" id="stats"></div>
-
-  <div class="panel">
-    <h2>新建闪卡</h2>
-    <div class="form-grid">
-      <label>所属课时
-        <select id="f_lesson"></select>
-      </label>
-      <label>难度（CEFR 等级）
-        <select id="f_difficulty">
-          <option value="A1">A1 · 入门（最常用、最短的高频表达）</option>
-          <option value="A2">A2 · 基础（日常场景完整句）</option>
-          <option value="B1">B1 · 进阶（含变位/语域差异）</option>
-          <option value="B2">B2 · 高阶（俚语、委婉语、文化背景）</option>
-        </select>
-      </label>
-      <label class="full">正面（法语）<input id="f_front" placeholder="Du coup" /></label>
-      <label class="full">背面（中文释义）<input id="f_back" placeholder="所以 / 结果（口语高频）" /></label>
-      <label>例句（法语）<input id="f_ex_fr" placeholder="Il pleuvait, du coup on est restés." /></label>
-      <label>例句翻译<input id="f_ex_zh" placeholder="下雨了，所以我们就待在家里了。" /></label>
-      <label class="full">地道用法提示（会展示给学习者，选填）
-        <textarea id="f_tip" placeholder="教科书不会教，但法国人一天说几十次……"></textarea>
-      </label>
-      <label>标签（英文逗号分隔）<input id="f_tags" placeholder="口语,familier" /></label>
-      <label>状态
-        <select id="f_status"><option value="published">published 直接发布</option><option value="draft">draft 草稿</option></select>
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text)">
-        <input id="f_sensitive" type="checkbox" style="width:auto" /> 标记为敏感词汇（脏话/冒犯性）
-      </label>
+<!-- ============ 登录页 ============ -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 32 32"><rect x="6" y="8" width="6" height="16" fill="#fff"/><rect x="13" y="8" width="6" height="16" fill="#D4837A"/><rect x="20" y="8" width="6" height="16" fill="#fff"/></svg>
     </div>
-    <div style="margin-top:14px"><button class="btn" id="btnCreate">保存闪卡</button>
-      <span id="createMsg" style="font-size:12px;margin-left:10px;color:var(--green)"></span></div>
+    <h1>法语学习小程序 · 管理后台</h1>
+    <div class="sub">请登录管理员账号以继续</div>
+    <form id="loginForm">
+      <label>用户名
+        <input id="loginUser" placeholder="admin" autocomplete="username" />
+      </label>
+      <label>密码
+        <input id="loginPass" type="password" placeholder="••••••" autocomplete="current-password" />
+      </label>
+      <button class="btn" type="submit" id="btnLogin">登 录</button>
+      <div id="loginMsg"></div>
+      <div class="login-tip">V0 演示环境默认账号：<code>admin</code> / <code>admin</code><br />正式环境将接入服务端 JWT 鉴权与审计日志</div>
+    </form>
   </div>
+</div>
 
-  <div class="panel">
-    <h2>闪卡列表</h2>
-    <div class="toolbar">
-      <input id="q" placeholder="搜索法语/中文…" style="flex:1;min-width:180px" />
-      <select id="filterLesson"><option value="">全部课时</option></select>
-      <select id="filterLevel">
-        <option value="">全部难度</option>
-        <option value="A1">A1</option>
-        <option value="A2">A2</option>
-        <option value="B1">B1</option>
-        <option value="B2">B2</option>
-      </select>
+<!-- ============ 主框架 ============ -->
+<div id="appView">
+  <header>
+    <div>
+      <h1>管理后台 · 法语学习小程序</h1>
+      <div class="sub">内容录入 / 数据分析 — 完整 Vue 3 后台见 admin/（V1）</div>
     </div>
-    <div id="list"><div class="empty">加载中…</div></div>
-  </div>
+    <div class="ops">
+      <a href="/" target="_blank">← 回到小程序预览</a>
+      <span id="whoami" style="font-size:12px;opacity:.85"></span>
+      <button id="btnLogout">退出登录</button>
+    </div>
+  </header>
 
-  <div class="panel">
-    <h2>说明</h2>
-    <div class="note">
-      • 本页是 <b>V0 极简后台</b>，只为让你现在就能录入和校对内容；生产后台请用 <code>admin/</code>（Vue 3 + Element Plus，含登录锁定、审计日志、批量导入）。<br />
-      • <b>敏感词汇</b>：勾选后，只有用户主动开启「学习全部词汇」时才会下发（PRD 5.2 / 5.5）。<br />
-      • <b>draft 状态</b>的闪卡不会出现在小程序端，方便你先存草稿。<br />
-      • 数据存在 SQLite 演示库 <code>demo/data/demo.db</code>，正式内容请走生产后端 <code>backend/</code> 写入 PostgreSQL。
+  <nav>
+    <button data-tab="overview" class="on">📊 数据概览</button>
+    <button data-tab="flashcards">🗂️ 闪卡管理</button>
+    <button data-tab="about">📖 使用说明</button>
+  </nav>
+
+  <!-- ===== Tab 1：数据概览 ===== -->
+  <section class="tab on" id="tab-overview">
+    <div class="wrap">
+      <div class="stats" id="ovStats"></div>
+      <div class="ov-grid">
+        <div class="panel">
+          <h2>近 7 日热门闪卡 Top 10</h2>
+          <div id="ovTop"><div class="empty">加载中…</div></div>
+        </div>
+        <div class="panel">
+          <h2>用户等级分布</h2>
+          <div id="ovLevels"><div class="empty">加载中…</div></div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ===== Tab 2：闪卡管理 ===== -->
+  <section class="tab" id="tab-flashcards">
+    <div class="wrap">
+      <div class="stats" id="stats"></div>
+
+      <div class="panel">
+        <h2>新建闪卡</h2>
+        <div class="form-grid">
+          <label>所属课时
+            <select id="f_lesson"></select>
+          </label>
+          <label>难度（CEFR 等级）
+            <select id="f_difficulty">
+              <option value="A1">A1 · 入门（最常用、最短的高频表达）</option>
+              <option value="A2">A2 · 基础（日常场景完整句）</option>
+              <option value="B1">B1 · 进阶（含变位/语域差异）</option>
+              <option value="B2">B2 · 高阶（俚语、委婉语、文化背景）</option>
+            </select>
+          </label>
+          <label class="full">正面（法语）<input id="f_front" placeholder="Du coup" /></label>
+          <label class="full">背面（中文释义）<input id="f_back" placeholder="所以 / 结果（口语高频）" /></label>
+          <label>例句（法语）<input id="f_ex_fr" placeholder="Il pleuvait, du coup on est restés." /></label>
+          <label>例句翻译<input id="f_ex_zh" placeholder="下雨了，所以我们就待在家里了。" /></label>
+          <label class="full">地道用法提示（会展示给学习者，选填）
+            <textarea id="f_tip" placeholder="教科书不会教，但法国人一天说几十次……"></textarea>
+          </label>
+          <label>标签（英文逗号分隔）<input id="f_tags" placeholder="口语,familier" /></label>
+          <label>状态
+            <select id="f_status"><option value="published">published 直接发布</option><option value="draft">draft 草稿</option></select>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text)">
+            <input id="f_sensitive" type="checkbox" style="width:auto" /> 标记为敏感词汇（脏话/冒犯性）
+          </label>
+        </div>
+        <div style="margin-top:14px"><button class="btn" id="btnCreate">保存闪卡</button>
+          <span id="createMsg" style="font-size:12px;margin-left:10px;color:var(--green)"></span></div>
+      </div>
+
+      <div class="panel">
+        <h2>闪卡列表</h2>
+        <div class="toolbar">
+          <input id="q" placeholder="搜索法语/中文…" style="flex:1;min-width:180px" />
+          <select id="filterLesson"><option value="">全部课时</option></select>
+          <select id="filterLevel">
+            <option value="">全部难度</option>
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+          </select>
+        </div>
+        <div id="list"><div class="empty">加载中…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Tab 3：使用说明 ===== -->
+  <section class="tab" id="tab-about">
+    <div class="wrap">
+      <div class="panel">
+        <h2>说明</h2>
+        <div class="note">
+          • 登录账号可用环境变量覆盖：<code>DEMO_ADMIN_USER</code> / <code>DEMO_ADMIN_PASSWORD</code>（默认 <code>admin</code> / <code>admin</code>）。<br />
+          • <b>数据概览</b>来自小程序端行为埋点（<code>learning_events</code> 表）：活跃用户、事件量、热门卡片、等级分布。<br />
+          • <b>敏感词汇</b>：勾选后，只有用户主动开启「学习全部词汇」时才会下发（PRD 5.2 / 5.5）。<br />
+          • <b>draft 状态</b>的闪卡不会出现在小程序端，方便先存草稿。<br />
+          • 数据存在 SQLite 演示库 <code>demo/data/demo.db</code>，正式内容请走生产后端 <code>backend/</code> 写入 PostgreSQL。<br />
+          • 本页是 <b>V0 后台</b>；完整后台（Vue 3 + Element Plus，含角色权限、审计日志、批量导入）规划在 <code>admin/</code>（V1）。
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script src="/static/admin.js"></script>

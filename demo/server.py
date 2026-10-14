@@ -49,6 +49,10 @@ CST = timezone(timedelta(hours=8))
 # 若不加门禁，任何一个登录用户都能往内容库里写脏数据。
 # 生产环境请直接走 backend/ 的 AdminAccount + JWT 鉴权，不要复用这套逻辑。
 DEMO_ADMIN_KEY = os.environ.get("DEMO_ADMIN_KEY", "french-admin-2026")
+# 后台登录账号（V0 demo 默认 admin/admin，可用环境变量覆盖；
+# 生产后台请用 backend/ 的 AdminAccount + JWT + 审计日志那套）
+DEMO_ADMIN_USER = os.environ.get("DEMO_ADMIN_USER", "admin")
+DEMO_ADMIN_PASSWORD = os.environ.get("DEMO_ADMIN_PASSWORD", "admin")
 
 
 def today_cst():
@@ -740,6 +744,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"total_users": total_users, "active_users_1d": active_1d,
                                "active_users_7d": active_7d, "events_1d": events_1d, "events_7d": events_7d,
                                "top_cards_7d": top_cards_7d, "level_distribution": level_distribution})
+
+        # ========== 后台登录：账号密码校验通过后签发 X-Admin-Key 门禁钥匙 ==========
+        # 该接口在下方门禁之前处理，本身不需要钥匙。失败固定延时做简单防爆破。
+        if path == "/api/admin/login" and method == "POST":
+            username = str(body.get("username") or "").strip()
+            password = str(body.get("password") or "")
+            if username == DEMO_ADMIN_USER and password == DEMO_ADMIN_PASSWORD:
+                return self._json({"ok": True, "token": DEMO_ADMIN_KEY, "nickname": username})
+            time.sleep(0.6)
+            return self._err(401, "用户名或密码不正确")
 
         # 以下接口需要登录态，demo 用 Authorization: Bearer demo.<uid>.<openid>
         uid = self._current_user_id(conn)

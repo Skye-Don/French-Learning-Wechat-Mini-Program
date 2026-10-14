@@ -38,10 +38,12 @@
         <text class="menu-extra">{{profile.sensitive_opt_in ? '已开启全部' : '仅常规词汇'}}</text>
         <text class="menu-arrow">›</text>
       </view>
-      <button class="menu-item share-btn" open-type="share">
+      <!-- 分享：视觉由 view 控制，隐形 button 铺满整行触发原生分享（详见 wxss 注释） -->
+      <view class="menu-item share-row">
         <text class="menu-ico">📤</text><text class="menu-label">分享给好友</text>
         <text class="menu-extra">邀请朋友一起学</text><text class="menu-arrow">›</text>
-      </button>
+        <button class="share-hit" open-type="share" aria-label="分享给好友"></button>
+      </view>
       <view class="menu-item" bindtap="onAbout">
         <text class="menu-ico">ℹ️</text><text class="menu-label">关于</text>
         <text class="menu-extra">V0 框架版</text><text class="menu-arrow">›</text>
